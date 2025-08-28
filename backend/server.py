@@ -141,14 +141,21 @@ async def upload_content(
     tags: str = Form(""),
     file: UploadFile = File(...)
 ):
-    """Upload video or image content"""
+    """Upload video or image content with support for large files"""
     
     # Validate category
     valid_categories = ["videos", "pictures", "live_streams"]
     if category not in valid_categories:
         raise HTTPException(status_code=400, detail="Invalid category")
     
-    # Validate file type
+    # Enhanced file size limits for high-quality content
+    max_file_sizes = {
+        "videos": 10 * 1024 * 1024 * 1024,  # 10GB for videos
+        "pictures": 100 * 1024 * 1024,       # 100MB for pictures
+        "live_streams": 5 * 1024 * 1024 * 1024  # 5GB for live streams
+    }
+    
+    # Validate file type and size
     if category == "videos":
         if not file.content_type.startswith("video/"):
             raise HTTPException(status_code=400, detail="Invalid file type for videos")
@@ -156,35 +163,67 @@ async def upload_content(
         if not file.content_type.startswith("image/"):
             raise HTTPException(status_code=400, detail="Invalid file type for pictures")
     
+    # Check file size
+    file_size = 0
+    file_content = b""
+    
+    # Read file in chunks to handle large files efficiently
+    chunk_size = 1024 * 1024  # 1MB chunks
+    while True:
+        chunk = await file.read(chunk_size)
+        if not chunk:
+            break
+        file_content += chunk
+        file_size += len(chunk)
+        
+        # Check if file exceeds size limit
+        if file_size > max_file_sizes.get(category, 100 * 1024 * 1024):
+            raise HTTPException(
+                status_code=413, 
+                detail=f"File too large. Maximum size for {category}: {max_file_sizes[category] // (1024*1024*1024)}GB" if max_file_sizes[category] >= 1024*1024*1024 else f"{max_file_sizes[category] // (1024*1024)}MB"
+            )
+    
     # Process tags
     tag_list = [tag.strip() for tag in tags.split(",") if tag.strip()] if tags else []
     
-    # Read file content
-    file_content = await file.read()
-    
-    # Store in GridFS
+    # Store in GridFS with metadata
     file_id = fs.put(
         file_content,
         filename=file.filename,
-        content_type=file.content_type
+        content_type=file.content_type,
+        metadata={
+            "category": category,
+            "original_size": file_size,
+            "upload_timestamp": datetime.now(timezone.utc),
+            "high_quality": file_size > (100 * 1024 * 1024),  # Mark as high-quality if > 100MB
+            "tags": tag_list
+        }
     )
     
-    # Create content item
+    # Create content item with enhanced metadata
     content_item = ContentItem(
         filename=str(file_id),
         original_filename=file.filename,
         content_type=file.content_type,
-        file_size=len(file_content),
+        file_size=file_size,
         category=category,
         tags=tag_list,
-        description=description,
-        processing_status="completed" if category == "pictures" else "pending"
+        description=description or f"High-quality {category.rstrip('s')} upload - {file.filename}",
+        processing_status="completed" if category == "pictures" else "processing"  # Videos may need processing
     )
     
     # Save to database
     await db.content_items.insert_one(content_item.dict())
     
-    return {"message": "Content uploaded successfully", "content_id": content_item.id}
+    logger.info(f"Successfully uploaded {file.filename} ({file_size} bytes) in category {category}")
+    
+    return {
+        "message": "Content uploaded successfully", 
+        "content_id": content_item.id,
+        "file_size": file_size,
+        "high_quality": file_size > (100 * 1024 * 1024),
+        "processing_status": content_item.processing_status
+    }
 
 @api_router.get("/content/{category}")
 async def get_content_by_category(category: str):
