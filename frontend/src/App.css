@@ -1204,11 +1204,6 @@ body {
     justify-content: center;
   }
 }
-  .content-card {
-    min-width: 250px;
-    height: 140px;
-  }
-}
 
 @media (max-width: 1024px) {
   .netflix-header {
