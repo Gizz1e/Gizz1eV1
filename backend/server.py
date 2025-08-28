@@ -25,8 +25,12 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
+# Synchronous MongoDB client for GridFS
+sync_client = pymongo.MongoClient(mongo_url)
+sync_db = sync_client[os.environ['DB_NAME']]
+
 # GridFS for file storage
-fs = gridfs.GridFS(db)
+fs = gridfs.GridFS(sync_db)
 
 # Create the main app without a prefix
 app = FastAPI(title="Gizzle TV L.L.C. API", version="1.0.0")
