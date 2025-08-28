@@ -685,6 +685,8 @@ function App() {
     switch (activeTab) {
       case 'home':
         return <HeroSection />;
+      case 'gizzle-tv':
+        return <GizzleTVSection />;
       case 'videos':
         return (
           <div className="content-section">
