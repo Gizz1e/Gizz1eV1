@@ -5,7 +5,7 @@ import io
 from datetime import datetime
 
 class GizzleTVAPITester:
-    def __init__(self, base_url="https://media-upload-2.preview.emergentagent.com/api"):
+    def __init__(self, base_url="https://streamhub-402.preview.emergentagent.com/api"):
         self.base_url = base_url
         self.tests_run = 0
         self.tests_passed = 0
