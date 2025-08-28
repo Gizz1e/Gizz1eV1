@@ -941,6 +941,9 @@ function App() {
           </div>
         );
       
+      case 'models':
+        return <ModelsSection onVideoClick={openVideoPlayer} />;
+      
       case 'gizzle-tv':
         return (
           <div className="netflix-section">
@@ -1004,9 +1007,10 @@ function App() {
                 <h3>Basic</h3>
                 <div className="plan-price">$9.99<span>/month</span></div>
                 <ul className="plan-features">
-                  <li>Upload videos up to 100MB</li>
-                  <li>5 videos per day</li>
+                  <li>Upload videos up to 1GB</li>
+                  <li>10 videos per day</li>
                   <li>Basic community access</li>
+                  <li>Standard quality streaming</li>
                 </ul>
                 <button className="plan-btn">Choose Basic</button>
               </div>
@@ -1016,10 +1020,11 @@ function App() {
                 <h3>Premium</h3>
                 <div className="plan-price">$19.99<span>/month</span></div>
                 <ul className="plan-features">
-                  <li>Upload videos up to 1GB</li>
+                  <li>Upload videos up to 5GB</li>
                   <li>Unlimited uploads</li>
                   <li>Premium community features</li>
-                  <li>Live streaming access</li>
+                  <li>4K quality streaming</li>
+                  <li>Model verification badge</li>
                 </ul>
                 <button className="plan-btn primary">Choose Premium</button>
               </div>
@@ -1028,9 +1033,10 @@ function App() {
                 <h3>VIP</h3>
                 <div className="plan-price">$39.99<span>/month</span></div>
                 <ul className="plan-features">
-                  <li>Unlimited everything</li>
+                  <li>Upload videos up to 10GB</li>
+                  <li>8K quality streaming</li>
+                  <li>Exclusive model features</li>
                   <li>Priority support</li>
-                  <li>Exclusive community access</li>
                   <li>Advanced analytics</li>
                 </ul>
                 <button className="plan-btn">Choose VIP</button>
