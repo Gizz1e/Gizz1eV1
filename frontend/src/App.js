@@ -391,6 +391,10 @@ const HeroBanner = ({ onPlayClick }) => {
           src="https://customer-assets.emergentagent.com/job_media-upload-2/artifacts/5xzuzie2_thumbnail_FD3537EB-E493-45C7-8E2E-1C6F4DC548FB.png"
           alt="Gizzle TV Background"
           className="hero-bg-img"
+          onError={(e) => {
+            console.log("Image failed to load, using fallback");
+            e.target.src = "https://customer-assets.emergentagent.com/job_media-upload-2/artifacts/ysim4ger_thumbnail_FD3537EB-E493-45C7-8E2E-1C6F4DC548FB.jpg";
+          }}
         />
         <div className="hero-video-overlay"></div>
         <div className="hero-gradient-overlay"></div>
