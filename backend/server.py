@@ -281,6 +281,92 @@ async def get_file(file_id: str):
     except gridfs.errors.NoFile:
         raise HTTPException(status_code=404, detail="File not found")
 
+# Models Endpoints
+@api_router.post("/models", response_model=ModelProfile)
+async def create_model_profile(profile_data: ModelProfileCreate):
+    """Create a new model profile"""
+    
+    # Check if username already exists
+    existing_model = await db.model_profiles.find_one({"username": profile_data.username})
+    if existing_model:
+        raise HTTPException(status_code=400, detail="Username already exists")
+    
+    profile = ModelProfile(**profile_data.dict())
+    await db.model_profiles.insert_one(profile.dict())
+    
+    return profile
+
+@api_router.get("/models", response_model=List[ModelProfile])
+async def get_models(
+    featured: Optional[bool] = None,
+    category: Optional[str] = None,
+    verified: Optional[bool] = None,
+    limit: int = 20
+):
+    """Get model profiles with optional filtering"""
+    
+    query = {}
+    
+    if featured is not None:
+        query["is_featured"] = featured
+    
+    if category:
+        query["category"] = category
+    
+    if verified is not None:
+        query["verification_status"] = "verified" if verified else {"$ne": "verified"}
+    
+    models = await db.model_profiles.find(query).limit(limit).to_list(limit)
+    return [ModelProfile(**model) for model in models]
+
+@api_router.get("/models/{model_id}", response_model=ModelProfile)
+async def get_model_profile(model_id: str):
+    """Get a specific model profile"""
+    
+    model = await db.model_profiles.find_one({"id": model_id})
+    if not model:
+        raise HTTPException(status_code=404, detail="Model not found")
+    
+    return ModelProfile(**model)
+
+@api_router.put("/models/{model_id}/verify")
+async def verify_model(model_id: str):
+    """Verify a model profile (admin function)"""
+    
+    result = await db.model_profiles.update_one(
+        {"id": model_id},
+        {
+            "$set": {
+                "verification_status": "verified",
+                "updated_at": datetime.now(timezone.utc)
+            }
+        }
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Model not found")
+    
+    return {"message": "Model verified successfully"}
+
+@api_router.put("/models/{model_id}/feature")
+async def feature_model(model_id: str, featured: bool = True):
+    """Feature/unfeature a model profile (admin function)"""
+    
+    result = await db.model_profiles.update_one(
+        {"id": model_id},
+        {
+            "$set": {
+                "is_featured": featured,
+                "updated_at": datetime.now(timezone.utc)
+            }
+        }
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Model not found")
+    
+    return {"message": f"Model {'featured' if featured else 'unfeatured'} successfully"}
+
 # Community Endpoints
 @api_router.post("/community/members", response_model=CommunityMember)
 async def create_member(member_data: CommunityMemberCreate):
