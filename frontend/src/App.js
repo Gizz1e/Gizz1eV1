@@ -42,7 +42,8 @@ const HeroSection = () => {
 const Navigation = ({ activeTab, setActiveTab, isMobileMenuOpen, setIsMobileMenuOpen }) => {
   const navItems = [
     { id: 'home', label: 'Home', icon: <Star size={20} /> },
-    { id: 'videos', label: 'Videos', icon: <Play size={20} /> },
+    { id: 'gizzle-tv', label: 'Gizzle TV', icon: <Play size={20} /> },
+    { id: 'videos', label: 'Videos', icon: <Upload size={20} /> },
     { id: 'pictures', label: 'Pictures', icon: <Image size={20} /> },
     { id: 'live-streams', label: 'Live Streams', icon: <Upload size={20} /> },
     { id: 'community', label: 'Community', icon: <Users size={20} /> },
