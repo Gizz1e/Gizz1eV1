@@ -3,7 +3,16 @@ import "./App.css";
 import "./VideoPlayer.css";
 import { BrowserRouter, Routes, Route, Link, useLocation } from "react-router-dom";
 import axios from "axios";
-import { Upload, Play, Image, Users, Crown, ShoppingBag, Menu, X, Star, Check, Pause, Volume2, VolumeX, Maximize, SkipBack, SkipForward, ChevronLeft, ChevronRight, Info } from "lucide-react";
+import { Upload, Play, Image, Users, Crown, ShoppingBag, Menu, X, Star, Check, Pause, Volume2, VolumeX, Maximize, SkipBack, SkipForward, ChevronLeft, ChevronRight, Info, Video, Shield, User } from "lucide-react";
+
+// Import contexts and components
+import AuthProvider, { useAuth } from './contexts/AuthContext';
+import WebRTCProvider from './contexts/WebRTCContext';
+import AuthModal from './components/AuthModal';
+import ModelApplication from './components/ModelApplication';
+import LiveStreaming from './components/LiveStreaming';
+import StreamViewer from './components/StreamViewer';
+import LiveStreamsList from './components/LiveStreamsList';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
