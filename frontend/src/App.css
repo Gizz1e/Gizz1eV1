@@ -1432,24 +1432,47 @@ body {
 .auth-buttons {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 20px;
+  padding: 8px 0;
 }
 
 .viewer-auth-section {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 
 .divider {
   color: #666;
-  font-size: 16px;
-  margin: 0 4px;
+  font-size: 18px;
+  margin: 0 8px;
+  opacity: 0.6;
 }
 
 .account-badge {
   font-size: 12px;
-  margin-left: 4px;
+  margin-left: 6px;
+  padding: 2px 6px;
+  background: rgba(229, 62, 62, 0.2);
+  border-radius: 4px;
+}
+
+/* Profile dropdown improvements */
+.profile-avatar.authenticated {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  cursor: pointer;
+  transition: all 0.3s;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.profile-avatar.authenticated:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .viewer-login-btn {
