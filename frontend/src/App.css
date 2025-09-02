@@ -1886,14 +1886,22 @@ body {
 
 /* Content sections mobile optimization */
 .netflix-section {
-  padding: 20px 16px;
-  min-height: calc(100vh - 130px);
+  padding: 30px 20px;
+  min-height: calc(100vh - 150px);
+  margin-bottom: 20px;
 }
 
 @media (min-width: 769px) {
   .netflix-section {
-    padding: 40px 60px;
+    padding: 60px 80px;
     min-height: auto;
+    margin-bottom: 40px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .netflix-section {
+    padding: 80px 100px;
   }
 }
 
