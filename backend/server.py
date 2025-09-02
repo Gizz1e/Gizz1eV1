@@ -706,9 +706,9 @@ async def stripe_webhook(request: Request):
 # AUTHENTICATION ENDPOINTS
 # =====================
 
-@api_router.post("/auth/register")
-async def register_user(user_data: UserRegistration):
-    """Register new user account"""
+@api_router.post("/auth/viewer/register")
+async def register_viewer(user_data: UserRegistration):
+    """Register new viewer account"""
     try:
         # Check if username exists
         existing_user = await db.users.find_one({"username": user_data.username})
@@ -720,12 +720,12 @@ async def register_user(user_data: UserRegistration):
         if existing_email:
             raise HTTPException(status_code=400, detail="Email already registered")
         
-        # Create user account
+        # Create viewer account (always non-model)
         user_account_data = await auth_manager.create_user_account(
             username=user_data.username,
             email=user_data.email,
             password=user_data.password,
-            is_model_application=user_data.is_model_application
+            is_model_application=False  # Viewers are not models
         )
         
         # Save to database
@@ -751,19 +751,20 @@ async def register_user(user_data: UserRegistration):
                 "username": user_account_data["username"],
                 "email": user_account_data["email"],
                 "roles": user_account_data["roles"],
-                "is_model": user_account_data["is_model"]
+                "is_model": False,
+                "account_type": "viewer"
             }
         }
         
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        logger.error(f"Registration error: {e}")
-        raise HTTPException(status_code=500, detail="Registration failed")
+        logger.error(f"Viewer registration error: {e}")
+        raise HTTPException(status_code=500, detail="Viewer registration failed")
 
-@api_router.post("/auth/login")
-async def login_user(login_data: UserLogin):
-    """User login endpoint"""
+@api_router.post("/auth/viewer/login")
+async def login_viewer(login_data: UserLogin):
+    """Viewer login endpoint"""
     user = await auth_manager.authenticate_user(
         login_data.username_or_email, 
         login_data.password, 
@@ -773,7 +774,7 @@ async def login_user(login_data: UserLogin):
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid credentials"
+            detail="Invalid email or password"
         )
     
     # Create tokens
@@ -800,9 +801,72 @@ async def login_user(login_data: UserLogin):
             "roles": user["roles"],
             "is_model": user.get("is_model", False),
             "model_verification_status": user.get("model_verification_status", "none"),
-            "subscription_tier": user.get("subscription_tier", "free")
+            "subscription_tier": user.get("subscription_tier", "free"),
+            "account_type": "viewer" if not user.get("is_model", False) else "model"
         }
     }
+
+@api_router.post("/auth/model/login")
+async def login_model(login_data: UserLogin):
+    """Model-specific login endpoint"""
+    user = await auth_manager.authenticate_user(
+        login_data.username_or_email, 
+        login_data.password, 
+        db
+    )
+    
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password"
+        )
+    
+    # Verify user is a model
+    if not user.get("is_model", False):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="This account is not registered as a model. Please use viewer sign-in or apply to become a model."
+        )
+    
+    # Create tokens with model-specific data
+    token_data = {
+        "user_id": user["user_id"],
+        "username": user["username"],
+        "roles": user["roles"],
+        "subscription_tier": user.get("subscription_tier", "free"),
+        "is_model": True,
+        "model_verification_status": user.get("model_verification_status", "pending")
+    }
+    
+    access_token = auth_manager.create_access_token(token_data)
+    refresh_token = auth_manager.create_refresh_token(user["user_id"])
+    
+    return {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "token_type": "bearer",
+        "user": {
+            "user_id": user["user_id"],
+            "username": user["username"],
+            "email": user["email"],
+            "roles": user["roles"],
+            "is_model": True,
+            "model_verification_status": user.get("model_verification_status", "pending"),
+            "subscription_tier": user.get("subscription_tier", "free"),
+            "account_type": "model"
+        }
+    }
+
+# Legacy endpoints for backward compatibility
+@api_router.post("/auth/register")
+async def register_user(user_data: UserRegistration):
+    """Register new user account (legacy - redirects to viewer registration)"""
+    return await register_viewer(user_data)
+
+@api_router.post("/auth/login")
+async def login_user(login_data: UserLogin):
+    """User login endpoint (legacy - works for both viewers and models)"""
+    return await login_viewer(login_data)
 
 # =====================
 # MODEL APPLICATION ENDPOINTS
