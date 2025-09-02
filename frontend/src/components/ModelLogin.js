@@ -8,7 +8,7 @@ const ModelLogin = ({ isOpen, onClose }) => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const { login } = useAuth();
+  const { modelLogin } = useAuth();
 
   const [formData, setFormData] = useState({
     email: '',
