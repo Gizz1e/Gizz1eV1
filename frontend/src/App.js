@@ -1311,6 +1311,18 @@ function AppContent() {
           </div>
         );
       
+      case 'live-streams':
+        return (
+          <div className="netflix-section">
+            <LiveStreamsList 
+              onStreamSelect={(stream) => {
+                setSelectedStreamId(stream.stream_id);
+                setShowStreamViewer(true);
+              }}
+            />
+          </div>
+        );
+      
       default:
         return (
           <div className="netflix-section">
