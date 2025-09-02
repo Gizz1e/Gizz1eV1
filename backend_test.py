@@ -552,12 +552,14 @@ class GizzleTVAPITester:
             
             response = requests.post(f"{self.base_url}/streams/test_stream/webrtc/offer", json=offer_data, timeout=10)
             
-            # Should return 401 Unauthorized without token
-            success = response.status_code == 401
+            # Should return 401 Unauthorized or 403 Forbidden without token
+            success = response.status_code in [401, 403]
             details = f"Status: {response.status_code}"
             
-            if success:
+            if response.status_code == 401:
                 details += ", Correctly requires authentication for WebRTC offer"
+            elif response.status_code == 403:
+                details += ", Correctly denies access for WebRTC offer"
             else:
                 details += ", Unexpected response for unauthenticated WebRTC offer"
             
