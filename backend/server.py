@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, UploadFile, File, HTTPException, Form, Request
+from fastapi import FastAPI, APIRouter, UploadFile, File, HTTPException, Form, Request, WebSocket, WebSocketDisconnect, Depends
 from fastapi.responses import StreamingResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
@@ -15,7 +15,15 @@ from typing import List, Optional, Dict, Any
 import uuid
 from datetime import datetime, timezone
 import mimetypes
+import json
+import asyncio
+
 from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionResponse, CheckoutStatusResponse, CheckoutSessionRequest
+
+# Import our WebRTC and streaming modules
+from webrtc_manager import webrtc_manager, StreamType
+from websocket_manager import websocket_manager, MessageType
+from auth_manager import auth_manager, User, ModelApplication
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
