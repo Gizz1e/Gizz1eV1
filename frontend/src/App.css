@@ -1295,6 +1295,33 @@ body {
   100% { transform: rotate(360deg); }
 }
 
+/* Mobile-First Responsive Base */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+.App {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f0f23, #16213e);
+  padding-top: 60px; /* Space for mobile header */
+  padding-bottom: 70px; /* Space for mobile bottom nav */
+}
+
+@media (min-width: 769px) {
+  .App {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+}
+
 /* Authentication and Streaming UI Styles */
 .streaming-btn {
   background: linear-gradient(135deg, #e53e3e, #c53030) !important;
