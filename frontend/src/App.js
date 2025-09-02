@@ -1061,13 +1061,14 @@ function AppContent() {
     recent: []
   });
 
-  // New states for WebRTC functionality
-  const [showAuthModal, setShowAuthModal] = useState(false);
+  // New states for dual authentication system
+  const [showViewerAuth, setShowViewerAuth] = useState(false);
+  const [showModelLogin, setShowModelLogin] = useState(false);
   const [showModelApplication, setShowModelApplication] = useState(false);
   const [showLiveStreaming, setShowLiveStreaming] = useState(false);
   const [showStreamViewer, setShowStreamViewer] = useState(false);
   const [selectedStreamId, setSelectedStreamId] = useState(null);
-  const [authModalMode, setAuthModalMode] = useState('login');
+  const [viewerAuthMode, setViewerAuthMode] = useState('register');
 
   // Sample data for Netflix-style rows
   useEffect(() => {
