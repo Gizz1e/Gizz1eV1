@@ -962,7 +962,8 @@ const Footer = () => {
 };
 
 // Main App Component
-function App() {
+function AppContent() {
+  const { user, isAuthenticated, logout, canCreateStreams } = useAuth();
   const [activeSection, setActiveSection] = useState('home');
   const [videoPlayerOpen, setVideoPlayerOpen] = useState(false);
   const [currentVideo, setCurrentVideo] = useState(null);
@@ -972,6 +973,14 @@ function App() {
     community: [],
     recent: []
   });
+
+  // New states for WebRTC functionality
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showModelApplication, setShowModelApplication] = useState(false);
+  const [showLiveStreaming, setShowLiveStreaming] = useState(false);
+  const [showStreamViewer, setShowStreamViewer] = useState(false);
+  const [selectedStreamId, setSelectedStreamId] = useState(null);
+  const [authModalMode, setAuthModalMode] = useState('login');
 
   // Sample data for Netflix-style rows
   useEffect(() => {
