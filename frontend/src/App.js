@@ -1377,6 +1377,18 @@ function AppContent() {
         canCreateStreams={canCreateStreams}
         logout={logout}
       />
+
+      {/* Mobile Navigation */}
+      <MobileNavigation
+        activeSection={activeSection}
+        setActiveSection={setActiveSection}
+        setShowViewerAuth={setShowViewerAuth}
+        setViewerAuthMode={setViewerAuthMode}
+        setShowModelLogin={setShowModelLogin}
+        isAuthenticated={isAuthenticated}
+        user={user}
+        logout={logout}
+      />
       
       <main className="netflix-main">
         {renderContent()}
