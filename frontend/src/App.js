@@ -1213,7 +1213,7 @@ function AppContent() {
                       src: "https://customer-assets.emergentagent.com/job_media-upload-2/artifacts/jzu6cqn5_AVAssetExportPreset3840x21602.mp4",
                       title: "Retrospective",
                       description: "A premium cinematic experience showcasing the finest moments and artistic vision of Gizzle TV. This exclusive 4K content represents the pinnacle of our creative journey.",
-                      poster: "https://customer-assets.emergentagent.com/job_media-upload-2/artifacts/ysim4ger_thumbnail_FD3537EB-E493-45C7-8E2E-1C6F4DC548FB.jpg"
+                      poster: "https://customer-assets.emergentagent.com/job_streamhub-402/artifacts/bvdyomxy_IMG_6888.png"
                     })}
                   >
                     <div className="retrospective-image">
