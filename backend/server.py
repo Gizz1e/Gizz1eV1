@@ -132,6 +132,64 @@ class PaymentTransaction(BaseModel):
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
+# New models for WebRTC streaming
+class LiveStreamCreate(BaseModel):
+    title: str
+    description: Optional[str] = None
+    stream_type: str = "public"  # public, private, premium
+    max_viewers: int = 1000
+
+class LiveStreamInfo(BaseModel):
+    stream_id: str
+    title: str
+    description: Optional[str]
+    stream_type: str
+    streamer_id: str
+    streamer_username: str
+    viewer_count: int
+    is_active: bool
+    created_at: datetime
+    max_viewers: int
+    tips_received: float
+
+class WebRTCOffer(BaseModel):
+    sdp: str
+    type: str
+
+class WebRTCAnswer(BaseModel):
+    sdp: str
+    type: str
+
+class ICECandidate(BaseModel):
+    candidate: str
+    sdpMLineIndex: int
+    sdpMid: str
+
+class TipRequest(BaseModel):
+    stream_id: str
+    amount: float
+    message: Optional[str] = None
+
+class UserRegistration(BaseModel):
+    username: str
+    email: str
+    password: str
+    is_model_application: bool = False
+
+class UserLogin(BaseModel):
+    username_or_email: str
+    password: str
+
+class ModelApplicationCreate(BaseModel):
+    stage_name: str
+    real_name: str
+    email: str
+    phone: Optional[str] = None
+    bio: str
+    social_links: Dict[str, str] = Field(default_factory=dict)
+    identity_document_ids: List[str] = Field(default_factory=list)
+    portfolio_file_ids: List[str] = Field(default_factory=list)
+
 # Subscription plans
 SUBSCRIPTION_PLANS = {
     "basic": SubscriptionPlan(
