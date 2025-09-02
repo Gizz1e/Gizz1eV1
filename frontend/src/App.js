@@ -1184,7 +1184,7 @@ function AppContent() {
         );
       
       case 'models':
-        return <ModelsSection onVideoClick={openVideoPlayer} />;
+        return <ModelsSection onVideoClick={openVideoPlayer} onBecomeModel={handleBecomeModel} />;
       
       case 'gizzle-tv':
         return (
