@@ -662,7 +662,10 @@ const ModelsSection = ({ onVideoClick, onBecomeModel }) => {
         <div className="models-hero-content">
           <h1>Discover Amazing Models</h1>
           <p>Connect with talented creators and explore exclusive content from verified models</p>
-          <button className="hero-btn primary">
+          <button 
+            className="hero-btn primary"
+            onClick={onBecomeModel}
+          >
             <Star size={20} />
             Become a Model
           </button>
