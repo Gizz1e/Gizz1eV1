@@ -262,24 +262,488 @@ class GizzleTVAPITester:
             self.log_test("Purchase Checkout", False, str(e))
             return False
 
+    # =====================
+    # AUTHENTICATION TESTS
+    # =====================
+    
+    def test_user_registration(self):
+        """Test user registration endpoint"""
+        try:
+            # Test normal user registration
+            user_data = {
+                "username": f"testuser_{int(time.time())}",
+                "email": f"testuser_{int(time.time())}@example.com",
+                "password": "TestPass123!",
+                "is_model_application": False
+            }
+            
+            response = requests.post(f"{self.base_url}/auth/register", json=user_data, timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                result = response.json()
+                self.user_token = result.get("access_token")
+                self.user_data = result.get("user")
+                details += f", User ID: {self.user_data.get('user_id', 'None')}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data.get('detail', 'Unknown error')}"
+                except:
+                    details += f", Response: {response.text[:100]}"
+            
+            self.log_test("User Registration", success, details)
+            return success
+            
+        except Exception as e:
+            self.log_test("User Registration", False, str(e))
+            return False
+    
+    def test_model_registration(self):
+        """Test model applicant registration"""
+        try:
+            # Test model applicant registration
+            model_data = {
+                "username": f"testmodel_{int(time.time())}",
+                "email": f"testmodel_{int(time.time())}@example.com",
+                "password": "TestPass123!",
+                "is_model_application": True
+            }
+            
+            response = requests.post(f"{self.base_url}/auth/register", json=model_data, timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                result = response.json()
+                self.model_token = result.get("access_token")
+                self.model_data = result.get("user")
+                details += f", Model ID: {self.model_data.get('user_id', 'None')}"
+                details += f", Is Model: {self.model_data.get('is_model', False)}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data.get('detail', 'Unknown error')}"
+                except:
+                    details += f", Response: {response.text[:100]}"
+            
+            self.log_test("Model Registration", success, details)
+            return success
+            
+        except Exception as e:
+            self.log_test("Model Registration", False, str(e))
+            return False
+    
+    def test_user_login(self):
+        """Test user login endpoint"""
+        if not self.user_data:
+            self.log_test("User Login", False, "No user data available for login test")
+            return False
+        
+        try:
+            login_data = {
+                "username_or_email": self.user_data["username"],
+                "password": "TestPass123!"
+            }
+            
+            response = requests.post(f"{self.base_url}/auth/login", json=login_data, timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                result = response.json()
+                details += f", Token received: {'access_token' in result}"
+                details += f", User ID: {result.get('user', {}).get('user_id', 'None')}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data.get('detail', 'Unknown error')}"
+                except:
+                    details += f", Response: {response.text[:100]}"
+            
+            self.log_test("User Login", success, details)
+            return success
+            
+        except Exception as e:
+            self.log_test("User Login", False, str(e))
+            return False
+    
+    def test_jwt_token_validation(self):
+        """Test JWT token validation"""
+        if not self.user_token:
+            self.log_test("JWT Token Validation", False, "No user token available")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.user_token}"}
+            
+            # Try to access a protected endpoint (model application)
+            response = requests.get(f"{self.base_url}/models/applications", headers=headers, timeout=10)
+            
+            # This should fail with 403 (insufficient permissions) not 401 (invalid token)
+            success = response.status_code in [403, 200]  # 403 means token is valid but insufficient permissions
+            details = f"Status: {response.status_code}"
+            
+            if response.status_code == 403:
+                details += ", Token valid but insufficient permissions (expected)"
+            elif response.status_code == 401:
+                success = False
+                details += ", Token invalid or expired"
+            elif response.status_code == 200:
+                details += ", Token valid with admin permissions"
+            
+            self.log_test("JWT Token Validation", success, details)
+            return success
+            
+        except Exception as e:
+            self.log_test("JWT Token Validation", False, str(e))
+            return False
+    
+    # =====================
+    # MODEL APPLICATION TESTS
+    # =====================
+    
+    def test_model_application_submission(self):
+        """Test model application submission"""
+        if not self.model_token:
+            self.log_test("Model Application Submission", False, "No model token available")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.model_token}"}
+            application_data = {
+                "stage_name": "Test Model",
+                "real_name": "Test Real Name",
+                "email": self.model_data["email"],
+                "phone": "+1234567890",
+                "bio": "Test model bio for verification",
+                "social_links": {
+                    "instagram": "https://instagram.com/testmodel",
+                    "twitter": "https://twitter.com/testmodel"
+                },
+                "identity_document_ids": [],
+                "portfolio_file_ids": []
+            }
+            
+            response = requests.post(f"{self.base_url}/models/apply", json=application_data, headers=headers, timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                result = response.json()
+                details += f", Application ID: {result.get('application_id', 'None')}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data.get('detail', 'Unknown error')}"
+                except:
+                    details += f", Response: {response.text[:100]}"
+            
+            self.log_test("Model Application Submission", success, details)
+            return success
+            
+        except Exception as e:
+            self.log_test("Model Application Submission", False, str(e))
+            return False
+    
+    def test_get_model_applications_unauthorized(self):
+        """Test getting model applications without admin permissions"""
+        if not self.user_token:
+            self.log_test("Get Model Applications (Unauthorized)", False, "No user token available")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.user_token}"}
+            response = requests.get(f"{self.base_url}/models/applications", headers=headers, timeout=10)
+            
+            # Should return 403 Forbidden for non-admin users
+            success = response.status_code == 403
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                details += ", Correctly denied access to non-admin user"
+            else:
+                details += ", Unexpected response for non-admin user"
+            
+            self.log_test("Get Model Applications (Unauthorized)", success, details)
+            return success
+            
+        except Exception as e:
+            self.log_test("Get Model Applications (Unauthorized)", False, str(e))
+            return False
+    
+    # =====================
+    # LIVE STREAMING TESTS
+    # =====================
+    
+    def test_create_stream_unauthorized(self):
+        """Test creating stream without model verification"""
+        if not self.user_token:
+            self.log_test("Create Stream (Unauthorized)", False, "No user token available")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.user_token}"}
+            stream_data = {
+                "title": "Test Stream",
+                "description": "Test stream description",
+                "stream_type": "public",
+                "max_viewers": 100
+            }
+            
+            response = requests.post(f"{self.base_url}/streams/create", json=stream_data, headers=headers, timeout=10)
+            
+            # Should return 403 Forbidden for non-verified models
+            success = response.status_code == 403
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                details += ", Correctly denied stream creation to non-verified user"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data.get('detail', 'Unknown error')}"
+                except:
+                    details += f", Response: {response.text[:100]}"
+            
+            self.log_test("Create Stream (Unauthorized)", success, details)
+            return success
+            
+        except Exception as e:
+            self.log_test("Create Stream (Unauthorized)", False, str(e))
+            return False
+    
+    def test_get_active_streams(self):
+        """Test getting active streams"""
+        try:
+            response = requests.get(f"{self.base_url}/streams/active", timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                streams = response.json()
+                details += f", Active streams count: {len(streams)}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data.get('detail', 'Unknown error')}"
+                except:
+                    details += f", Response: {response.text[:100]}"
+            
+            self.log_test("Get Active Streams", success, details)
+            return success
+            
+        except Exception as e:
+            self.log_test("Get Active Streams", False, str(e))
+            return False
+    
+    def test_webrtc_offer_unauthorized(self):
+        """Test WebRTC offer without authentication"""
+        try:
+            offer_data = {
+                "sdp": "test_sdp_content",
+                "type": "offer"
+            }
+            
+            response = requests.post(f"{self.base_url}/streams/test_stream/webrtc/offer", json=offer_data, timeout=10)
+            
+            # Should return 401 Unauthorized without token
+            success = response.status_code == 401
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                details += ", Correctly requires authentication for WebRTC offer"
+            else:
+                details += ", Unexpected response for unauthenticated WebRTC offer"
+            
+            self.log_test("WebRTC Offer (Unauthorized)", success, details)
+            return success
+            
+        except Exception as e:
+            self.log_test("WebRTC Offer (Unauthorized)", False, str(e))
+            return False
+    
+    def test_join_stream_unauthorized(self):
+        """Test joining stream without authentication"""
+        try:
+            join_data = {"connection_id": "test_connection_id"}
+            
+            response = requests.post(f"{self.base_url}/streams/test_stream/join", data=join_data, timeout=10)
+            
+            # Should return 401 or 404 (stream not found)
+            success = response.status_code in [401, 404]
+            details = f"Status: {response.status_code}"
+            
+            if response.status_code == 401:
+                details += ", Correctly requires authentication"
+            elif response.status_code == 404:
+                details += ", Stream not found (expected for test stream)"
+            
+            self.log_test("Join Stream (Unauthorized)", success, details)
+            return success
+            
+        except Exception as e:
+            self.log_test("Join Stream (Unauthorized)", False, str(e))
+            return False
+    
+    # =====================
+    # TIP SYSTEM TESTS
+    # =====================
+    
+    def test_send_tip_unauthorized(self):
+        """Test sending tip without authentication"""
+        try:
+            tip_data = {
+                "stream_id": "test_stream",
+                "amount": 5.0,
+                "message": "Test tip"
+            }
+            
+            response = requests.post(f"{self.base_url}/streams/test_stream/tip", json=tip_data, timeout=10)
+            
+            # Should return 401 Unauthorized without token
+            success = response.status_code == 401
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                details += ", Correctly requires authentication for tips"
+            else:
+                details += ", Unexpected response for unauthenticated tip"
+            
+            self.log_test("Send Tip (Unauthorized)", success, details)
+            return success
+            
+        except Exception as e:
+            self.log_test("Send Tip (Unauthorized)", False, str(e))
+            return False
+    
+    def test_send_tip_invalid_amount(self):
+        """Test sending tip with invalid amount"""
+        if not self.user_token:
+            self.log_test("Send Tip (Invalid Amount)", False, "No user token available")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.user_token}"}
+            tip_data = {
+                "stream_id": "test_stream",
+                "amount": 0.5,  # Below minimum $1
+                "message": "Test tip"
+            }
+            
+            response = requests.post(f"{self.base_url}/streams/test_stream/tip", json=tip_data, headers=headers, timeout=10)
+            
+            # Should return 400 Bad Request for invalid amount
+            success = response.status_code == 400
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data.get('detail', 'Unknown error')}"
+                except:
+                    details += ", Correctly rejected invalid tip amount"
+            else:
+                details += ", Unexpected response for invalid tip amount"
+            
+            self.log_test("Send Tip (Invalid Amount)", success, details)
+            return success
+            
+        except Exception as e:
+            self.log_test("Send Tip (Invalid Amount)", False, str(e))
+            return False
+    
+    # =====================
+    # ERROR HANDLING TESTS
+    # =====================
+    
+    def test_invalid_endpoints(self):
+        """Test invalid endpoint handling"""
+        try:
+            response = requests.get(f"{self.base_url}/nonexistent/endpoint", timeout=10)
+            success = response.status_code == 404
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                details += ", Correctly returns 404 for invalid endpoints"
+            else:
+                details += ", Unexpected response for invalid endpoint"
+            
+            self.log_test("Invalid Endpoint Handling", success, details)
+            return success
+            
+        except Exception as e:
+            self.log_test("Invalid Endpoint Handling", False, str(e))
+            return False
+    
+    def test_malformed_json(self):
+        """Test malformed JSON handling"""
+        try:
+            headers = {"Content-Type": "application/json"}
+            malformed_json = '{"invalid": json}'
+            
+            response = requests.post(f"{self.base_url}/auth/register", data=malformed_json, headers=headers, timeout=10)
+            success = response.status_code == 422  # Unprocessable Entity
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                details += ", Correctly handles malformed JSON"
+            else:
+                details += ", Unexpected response for malformed JSON"
+            
+            self.log_test("Malformed JSON Handling", success, details)
+            return success
+            
+        except Exception as e:
+            self.log_test("Malformed JSON Handling", False, str(e))
+            return False
+
     def run_all_tests(self):
         """Run all backend API tests"""
-        print("🚀 Starting Gizzle TV L.L.C. Backend API Tests")
+        print("🚀 Starting WebRTC Live Streaming Backend API Tests")
         print(f"Testing against: {self.base_url}")
         print("=" * 60)
         
         # Basic connectivity tests
+        print("\n📡 Basic Connectivity Tests")
         self.test_health_check()
         self.test_root_endpoint()
         
-        # Content management tests
+        # Authentication system tests
+        print("\n🔐 Authentication System Tests")
+        self.test_user_registration()
+        self.test_model_registration()
+        self.test_user_login()
+        self.test_jwt_token_validation()
+        
+        # Model registration system tests
+        print("\n👤 Model Registration System Tests")
+        self.test_model_application_submission()
+        self.test_get_model_applications_unauthorized()
+        
+        # Live streaming tests
+        print("\n📹 Live Streaming System Tests")
+        self.test_create_stream_unauthorized()
+        self.test_get_active_streams()
+        self.test_webrtc_offer_unauthorized()
+        self.test_join_stream_unauthorized()
+        
+        # Tip system tests
+        print("\n💰 Tip System Tests")
+        self.test_send_tip_unauthorized()
+        self.test_send_tip_invalid_amount()
+        
+        # Error handling tests
+        print("\n⚠️ Error Handling Tests")
+        self.test_invalid_endpoints()
+        self.test_malformed_json()
+        
+        # Legacy content management tests
+        print("\n📁 Legacy Content Management Tests")
         self.test_content_endpoints()
         self.test_file_upload()
-        
-        # Community tests
         self.test_community_members()
-        
-        # Subscription and payment tests
         self.test_subscription_plans()
         self.test_subscription_checkout()
         self.test_purchase_checkout()
