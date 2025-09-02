@@ -1357,6 +1357,10 @@ function AppContent() {
         setAuthModalMode={setAuthModalMode}
         setShowModelApplication={setShowModelApplication}
         setShowLiveStreaming={setShowLiveStreaming}
+        user={user}
+        isAuthenticated={isAuthenticated}
+        canCreateStreams={canCreateStreams}
+        logout={logout}
       />
       
       <main className="netflix-main">
