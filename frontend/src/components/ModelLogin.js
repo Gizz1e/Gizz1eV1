@@ -48,18 +48,13 @@ const ModelLogin = ({ isOpen, onClose }) => {
     setLoading(true);
 
     try {
-      const result = await login(formData.email, formData.password);
+      const result = await modelLogin(formData.email, formData.password);
       
       if (result.success) {
-        // Check if user is actually a model
-        if (result.user?.is_model) {
-          setSuccess('Welcome back! Redirecting to your model dashboard...');
-          setTimeout(() => {
-            onClose();
-          }, 1500);
-        } else {
-          setError('This account is not registered as a model. Please use viewer sign-in or apply to become a model.');
-        }
+        setSuccess('Welcome back! Redirecting to your model dashboard...');
+        setTimeout(() => {
+          onClose();
+        }, 1500);
       } else {
         setError(result.error || 'Invalid email or password');
       }
