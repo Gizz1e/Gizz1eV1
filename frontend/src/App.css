@@ -1970,60 +1970,82 @@ body {
 
 /* Content rows mobile */
 .content-row {
-  margin-bottom: 32px;
+  margin-bottom: 40px;
 }
 
 .content-row h2 {
-  font-size: 1.5rem;
-  margin-bottom: 16px;
-  padding: 0 16px;
+  font-size: 1.7rem;
+  margin-bottom: 20px;
+  padding: 0 20px;
+  font-weight: 600;
+  color: #ffffff;
 }
 
 @media (min-width: 769px) {
   .content-row {
-    margin-bottom: 48px;
+    margin-bottom: 60px;
   }
   
   .content-row h2 {
-    font-size: 2rem;
-    margin-bottom: 24px;
+    font-size: 2.2rem;
+    margin-bottom: 32px;
     padding: 0;
+  }
+}
+
+@media (min-width: 1200px) {
+  .content-row h2 {
+    font-size: 2.5rem;
   }
 }
 
 .content-scroll {
   display: flex;
-  gap: 12px;
+  gap: 16px;
   overflow-x: auto;
-  padding: 0 16px 16px;
+  padding: 0 20px 24px;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
 }
 
 @media (min-width: 769px) {
   .content-scroll {
-    gap: 20px;
-    padding: 0 0 20px;
+    gap: 24px;
+    padding: 0 0 32px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .content-scroll {
+    gap: 32px;
   }
 }
 
 .content-item {
-  flex: 0 0 280px;
+  flex: 0 0 300px;
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
+  border-radius: 16px;
   overflow: hidden;
   cursor: pointer;
   transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 @media (min-width: 769px) {
   .content-item {
-    flex: 0 0 320px;
+    flex: 0 0 340px;
   }
   
   .content-item:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    transform: translateY(-12px);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+    border-color: rgba(229, 62, 62, 0.3);
+  }
+}
+
+@media (min-width: 1200px) {
+  .content-item {
+    flex: 0 0 380px;
   }
 }
 
