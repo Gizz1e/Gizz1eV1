@@ -1359,7 +1359,47 @@ function AppContent() {
           poster={currentVideo.poster}
         />
       )}
+
+      {/* Authentication Modal */}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        initialMode={authModalMode}
+      />
+
+      {/* Model Application Modal */}
+      <ModelApplication
+        isOpen={showModelApplication}
+        onClose={() => setShowModelApplication(false)}
+      />
+
+      {/* Live Streaming Modal */}
+      <LiveStreaming
+        isOpen={showLiveStreaming}
+        onClose={() => setShowLiveStreaming(false)}
+      />
+
+      {/* Stream Viewer Modal */}
+      <StreamViewer
+        streamId={selectedStreamId}
+        isOpen={showStreamViewer}
+        onClose={() => {
+          setShowStreamViewer(false);
+          setSelectedStreamId(null);
+        }}
+      />
     </div>
+  );
+}
+
+// Main App Component with Providers
+function App() {
+  return (
+    <AuthProvider>
+      <WebRTCProvider>
+        <AppContent />
+      </WebRTCProvider>
+    </AuthProvider>
   );
 }
 
