@@ -1218,7 +1218,7 @@ function AppContent() {
                   >
                     <div className="retrospective-image">
                       <img 
-                        src="https://customer-assets.emergentagent.com/job_media-upload-2/artifacts/ysim4ger_thumbnail_FD3537EB-E493-45C7-8E2E-1C6F4DC548FB.jpg" 
+                        src="https://customer-assets.emergentagent.com/job_streamhub-402/artifacts/bvdyomxy_IMG_6888.png" 
                         alt="Retrospective"
                       />
                       <div className="retrospective-overlay">
