@@ -380,7 +380,7 @@ const NetflixHeader = ({
 
       <div className="header-right">
         {/* Streaming Actions for verified models */}
-        {canCreateStreams() && (
+        {canCreateStreams && canCreateStreams() && (
           <button 
             className="nav-item streaming-btn"
             onClick={() => setShowLiveStreaming(true)}
