@@ -3,6 +3,7 @@ import sys
 import json
 import io
 from datetime import datetime
+import time
 
 class GizzleTVAPITester:
     def __init__(self, base_url="https://streamhub-402.preview.emergentagent.com/api"):
@@ -10,6 +11,15 @@ class GizzleTVAPITester:
         self.tests_run = 0
         self.tests_passed = 0
         self.test_results = []
+        
+        # Store authentication tokens and user data for testing
+        self.user_token = None
+        self.admin_token = None
+        self.model_token = None
+        self.user_data = None
+        self.admin_data = None
+        self.model_data = None
+        self.stream_id = None
 
     def log_test(self, name, success, details=""):
         """Log test results"""
