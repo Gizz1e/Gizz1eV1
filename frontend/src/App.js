@@ -8,7 +8,8 @@ import { Upload, Play, Image, Users, Crown, ShoppingBag, Menu, X, Star, Check, P
 // Import contexts and components
 import AuthProvider, { useAuth } from './contexts/AuthContext';
 import WebRTCProvider from './contexts/WebRTCContext';
-import AuthModal from './components/AuthModal';
+import ViewerAuth from './components/ViewerAuth';
+import ModelLogin from './components/ModelLogin';
 import ModelApplication from './components/ModelApplication';
 import LiveStreaming from './components/LiveStreaming';
 import StreamViewer from './components/StreamViewer';
