@@ -356,10 +356,29 @@ const NetflixHeader = ({ activeSection, setActiveSection }) => {
           >
             Community
           </button>
+          <button 
+            className={`nav-item ${activeSection === 'live-streams' ? 'active' : ''}`}
+            onClick={() => setActiveSection('live-streams')}
+          >
+            <Video size={16} />
+            Live
+          </button>
         </nav>
       </div>
 
       <div className="header-right">
+        {/* Streaming Actions for verified models */}
+        {canCreateStreams() && (
+          <button 
+            className="nav-item streaming-btn"
+            onClick={() => setShowLiveStreaming(true)}
+            title="Start Live Stream"
+          >
+            <Video size={16} />
+            Go Live
+          </button>
+        )}
+        
         <button 
           className={`nav-item ${activeSection === 'subscriptions' ? 'active' : ''}`}
           onClick={() => setActiveSection('subscriptions')}
@@ -374,10 +393,65 @@ const NetflixHeader = ({ activeSection, setActiveSection }) => {
           <ShoppingBag size={16} />
           Store
         </button>
+        
+        {/* Authentication UI */}
         <div className="profile-menu">
-          <div className="profile-avatar">
-            <Users size={20} />
-          </div>
+          {isAuthenticated ? (
+            <div className="user-dropdown">
+              <div className="profile-avatar authenticated">
+                <User size={20} />
+                <span className="username">{user?.username}</span>
+              </div>
+              <div className="dropdown-content">
+                {user?.is_model && user?.model_verification_status === 'pending' && (
+                  <button onClick={() => setShowModelApplication(true)}>
+                    <Shield size={16} />
+                    Complete Model Application
+                  </button>
+                )}
+                {user?.is_model && user?.model_verification_status === 'approved' && (
+                  <button onClick={() => setShowLiveStreaming(true)}>
+                    <Video size={16} />
+                    Start Streaming
+                  </button>
+                )}
+                <button onClick={logout}>
+                  Logout
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="auth-buttons">
+              <button 
+                className="login-btn"
+                onClick={() => {
+                  setAuthModalMode('login');
+                  setShowAuthModal(true);
+                }}
+              >
+                Login
+              </button>
+              <button 
+                className="signup-btn"
+                onClick={() => {
+                  setAuthModalMode('register');
+                  setShowAuthModal(true);
+                }}
+              >
+                Sign Up
+              </button>
+              <button 
+                className="model-signup-btn"
+                onClick={() => {
+                  setAuthModalMode('model-register');
+                  setShowAuthModal(true);
+                }}
+                title="Apply as Model"
+              >
+                <Shield size={16} />
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </header>
