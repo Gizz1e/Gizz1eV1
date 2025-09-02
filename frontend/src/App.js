@@ -1396,9 +1396,9 @@ function AppContent() {
 
       <Footer />
 
-      {/* Video Player */}
+      {/* Responsive Video Player */}
       {videoPlayerOpen && currentVideo && (
-        <VideoPlayer
+        <ResponsiveVideoPlayer
           isOpen={videoPlayerOpen}
           onClose={() => setVideoPlayerOpen(false)}
           videoSrc={currentVideo.src}
