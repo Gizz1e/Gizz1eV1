@@ -1146,6 +1146,17 @@ function AppContent() {
     setVideoPlayerOpen(true);
   };
 
+  const handleBecomeModel = () => {
+    if (isAuthenticated) {
+      // If user is logged in, show model application
+      setShowModelApplication(true);
+    } else {
+      // If not logged in, show viewer registration first
+      setViewerAuthMode('register');
+      setShowViewerAuth(true);
+    }
+  };
+
   const renderContent = () => {
     switch (activeSection) {
       case 'home':
