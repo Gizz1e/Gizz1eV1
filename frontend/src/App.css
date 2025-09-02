@@ -24,12 +24,12 @@ body {
   top: 0;
   left: 0;
   right: 0;
-  height: 70px;
+  height: 80px;
   background: linear-gradient(180deg, rgba(0,0,0,0.7) 0%, transparent 100%);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 4%;
+  padding: 0 6%;
   z-index: 999;
   transition: background-color 0.4s ease;
 }
@@ -41,7 +41,13 @@ body {
 .header-left {
   display: flex;
   align-items: center;
-  gap: 2rem;
+  gap: 3rem;
+}
+
+@media (max-width: 768px) {
+  .header-left {
+    gap: 2rem;
+  }
 }
 
 .logo {
