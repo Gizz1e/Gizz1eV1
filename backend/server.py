@@ -702,6 +702,558 @@ async def stripe_webhook(request: Request):
         logger.error(f"Error processing webhook: {e}")
         raise HTTPException(status_code=400, detail="Webhook processing failed")
 
+# =====================
+# AUTHENTICATION ENDPOINTS
+# =====================
+
+@api_router.post("/auth/register")
+async def register_user(user_data: UserRegistration):
+    """Register new user account"""
+    try:
+        # Check if username exists
+        existing_user = await db.users.find_one({"username": user_data.username})
+        if existing_user:
+            raise HTTPException(status_code=400, detail="Username already exists")
+        
+        # Check if email exists
+        existing_email = await db.users.find_one({"email": user_data.email})
+        if existing_email:
+            raise HTTPException(status_code=400, detail="Email already registered")
+        
+        # Create user account
+        user_account_data = await auth_manager.create_user_account(
+            username=user_data.username,
+            email=user_data.email,
+            password=user_data.password,
+            is_model_application=user_data.is_model_application
+        )
+        
+        # Save to database
+        await db.users.insert_one(user_account_data)
+        
+        # Create tokens
+        token_data = {
+            "user_id": user_account_data["user_id"],
+            "username": user_account_data["username"],
+            "roles": user_account_data["roles"],
+            "subscription_tier": user_account_data["subscription_tier"]
+        }
+        
+        access_token = auth_manager.create_access_token(token_data)
+        refresh_token = auth_manager.create_refresh_token(user_account_data["user_id"])
+        
+        return {
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "token_type": "bearer",
+            "user": {
+                "user_id": user_account_data["user_id"],
+                "username": user_account_data["username"],
+                "email": user_account_data["email"],
+                "roles": user_account_data["roles"],
+                "is_model": user_account_data["is_model"]
+            }
+        }
+        
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Registration error: {e}")
+        raise HTTPException(status_code=500, detail="Registration failed")
+
+@api_router.post("/auth/login")
+async def login_user(login_data: UserLogin):
+    """User login endpoint"""
+    user = await auth_manager.authenticate_user(
+        login_data.username_or_email, 
+        login_data.password, 
+        db
+    )
+    
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid credentials"
+        )
+    
+    # Create tokens
+    token_data = {
+        "user_id": user["user_id"],
+        "username": user["username"],
+        "roles": user["roles"],
+        "subscription_tier": user.get("subscription_tier", "free"),
+        "is_model": user.get("is_model", False),
+        "model_verification_status": user.get("model_verification_status", "none")
+    }
+    
+    access_token = auth_manager.create_access_token(token_data)
+    refresh_token = auth_manager.create_refresh_token(user["user_id"])
+    
+    return {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "token_type": "bearer",
+        "user": {
+            "user_id": user["user_id"],
+            "username": user["username"],
+            "email": user["email"],
+            "roles": user["roles"],
+            "is_model": user.get("is_model", False),
+            "model_verification_status": user.get("model_verification_status", "none"),
+            "subscription_tier": user.get("subscription_tier", "free")
+        }
+    }
+
+# =====================
+# MODEL APPLICATION ENDPOINTS
+# =====================
+
+@api_router.post("/models/apply")
+async def submit_model_application(
+    application_data: ModelApplicationCreate,
+    current_user: Dict = Depends(auth_manager.require_auth)
+):
+    """Submit model verification application"""
+    
+    # Check if user already has a pending or approved application
+    existing_app = await db.model_applications.find_one({"user_id": current_user["user_id"]})
+    if existing_app:
+        raise HTTPException(
+            status_code=400, 
+            detail="Model application already exists"
+        )
+    
+    # Create application
+    application = await auth_manager.create_model_application(
+        user_id=current_user["user_id"],
+        stage_name=application_data.stage_name,
+        real_name=application_data.real_name,
+        email=application_data.email,
+        phone=application_data.phone,
+        bio=application_data.bio,
+        social_links=application_data.social_links,
+        identity_documents=application_data.identity_document_ids,
+        portfolio_files=application_data.portfolio_file_ids
+    )
+    
+    # Save to database
+    await db.model_applications.insert_one(application.dict())
+    
+    # Update user as model applicant
+    await db.users.update_one(
+        {"user_id": current_user["user_id"]},
+        {
+            "$set": {
+                "is_model": True,
+                "model_verification_status": "pending"
+            }
+        }
+    )
+    
+    return {"message": "Model application submitted successfully", "application_id": application.application_id}
+
+@api_router.get("/models/applications")
+async def get_model_applications(
+    status_filter: Optional[str] = None,
+    current_user: Dict = Depends(auth_manager.require_permissions(["verify_models"]))
+):
+    """Get model applications (admin only)"""
+    
+    query = {}
+    if status_filter:
+        query["status"] = status_filter
+    
+    applications = await db.model_applications.find(query).to_list(100)
+    return applications
+
+@api_router.put("/models/applications/{application_id}/review")
+async def review_model_application(
+    application_id: str,
+    action: str = Form(...),  # "approve" or "reject"
+    admin_notes: str = Form(""),
+    current_user: Dict = Depends(auth_manager.require_permissions(["verify_models"]))
+):
+    """Review model application (admin only)"""
+    
+    if action not in ["approve", "reject"]:
+        raise HTTPException(status_code=400, detail="Action must be 'approve' or 'reject'")
+    
+    application = await db.model_applications.find_one({"application_id": application_id})
+    if not application:
+        raise HTTPException(status_code=404, detail="Application not found")
+    
+    # Update application status
+    new_status = "approved" if action == "approve" else "rejected"
+    
+    await db.model_applications.update_one(
+        {"application_id": application_id},
+        {
+            "$set": {
+                "status": new_status,
+                "admin_notes": admin_notes,
+                "review_date": datetime.now(timezone.utc)
+            }
+        }
+    )
+    
+    # Update user model status
+    user_update = {"model_verification_status": new_status}
+    if action == "approve":
+        # Add model role if approved
+        user = await db.users.find_one({"user_id": application["user_id"]})
+        if user and "model" not in user.get("roles", []):
+            user_update["roles"] = user.get("roles", []) + ["model"]
+    
+    await db.users.update_one(
+        {"user_id": application["user_id"]},
+        {"$set": user_update}
+    )
+    
+    return {"message": f"Application {new_status} successfully"}
+
+# =====================
+# WEBRTC STREAMING ENDPOINTS  
+# =====================
+
+@api_router.post("/streams/create")
+async def create_live_stream(
+    stream_data: LiveStreamCreate,
+    current_user: Dict = Depends(auth_manager.require_model_status("approved"))
+):
+    """Create a new live stream (verified models only)"""
+    
+    try:
+        # Validate stream type
+        if stream_data.stream_type not in ["public", "private", "premium"]:
+            raise HTTPException(status_code=400, detail="Invalid stream type")
+        
+        # Create stream
+        stream_type = StreamType(stream_data.stream_type)
+        stream_id = await webrtc_manager.create_live_stream(
+            streamer_id=current_user["user_id"],
+            title=stream_data.title,
+            stream_type=stream_type
+        )
+        
+        # Save stream metadata to database
+        stream_metadata = {
+            "stream_id": stream_id,
+            "streamer_id": current_user["user_id"],
+            "streamer_username": current_user["username"],
+            "title": stream_data.title,
+            "description": stream_data.description,
+            "stream_type": stream_data.stream_type,
+            "max_viewers": stream_data.max_viewers,
+            "created_at": datetime.now(timezone.utc),
+            "is_active": False,
+            "total_tips": 0.0,
+            "peak_viewers": 0
+        }
+        
+        await db.live_streams.insert_one(stream_metadata)
+        
+        return {
+            "stream_id": stream_id,
+            "message": "Stream created successfully",
+            "websocket_url": f"/ws/stream/{stream_id}"
+        }
+        
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error creating stream: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create stream")
+
+@api_router.get("/streams/active")
+async def get_active_streams():
+    """Get list of active streams"""
+    
+    active_streams = await webrtc_manager.get_active_streams()
+    
+    # Enhance with database information
+    enhanced_streams = []
+    for stream in active_streams:
+        db_stream = await db.live_streams.find_one({"stream_id": stream["stream_id"]})
+        if db_stream:
+            enhanced_stream = {
+                **stream,
+                "streamer_username": db_stream.get("streamer_username", "Unknown"),
+                "description": db_stream.get("description"),
+                "peak_viewers": db_stream.get("peak_viewers", 0)
+            }
+            enhanced_streams.append(enhanced_stream)
+    
+    return enhanced_streams
+
+@api_router.get("/streams/{stream_id}")
+async def get_stream_info(stream_id: str):
+    """Get information about a specific stream"""
+    
+    # Get from WebRTC manager
+    stream_info = await webrtc_manager.get_stream_info(stream_id)
+    if not stream_info:
+        raise HTTPException(status_code=404, detail="Stream not found")
+    
+    # Get additional info from database
+    db_stream = await db.live_streams.find_one({"stream_id": stream_id})
+    if db_stream:
+        stream_info.update({
+            "streamer_username": db_stream.get("streamer_username", "Unknown"),
+            "description": db_stream.get("description"),
+            "peak_viewers": db_stream.get("peak_viewers", 0),
+            "total_tips": db_stream.get("total_tips", 0.0)
+        })
+    
+    return stream_info
+
+@api_router.post("/streams/{stream_id}/webrtc/offer")
+async def handle_webrtc_offer(
+    stream_id: str,
+    offer: WebRTCOffer,
+    current_user: Dict = Depends(auth_manager.require_auth)
+):
+    """Handle WebRTC offer for stream"""
+    
+    try:
+        # Create peer connection
+        connection_id = await webrtc_manager.create_peer_connection(current_user["user_id"])
+        
+        # Handle the offer
+        answer = await webrtc_manager.handle_offer(connection_id, offer.dict())
+        
+        return {
+            "connection_id": connection_id,
+            "answer": answer
+        }
+        
+    except Exception as e:
+        logger.error(f"Error handling WebRTC offer: {e}")
+        raise HTTPException(status_code=500, detail="Failed to process offer")
+
+@api_router.post("/streams/{stream_id}/webrtc/{connection_id}/answer")
+async def handle_webrtc_answer(
+    stream_id: str,
+    connection_id: str,
+    answer: WebRTCAnswer,
+    current_user: Dict = Depends(auth_manager.require_auth)
+):
+    """Handle WebRTC answer for connection"""
+    
+    try:
+        await webrtc_manager.handle_answer(connection_id, answer.dict())
+        return {"message": "Answer processed successfully"}
+        
+    except Exception as e:
+        logger.error(f"Error handling WebRTC answer: {e}")
+        raise HTTPException(status_code=500, detail="Failed to process answer")
+
+@api_router.post("/streams/{stream_id}/webrtc/{connection_id}/ice-candidate")
+async def handle_ice_candidate(
+    stream_id: str,
+    connection_id: str,
+    candidate: ICECandidate,
+    current_user: Dict = Depends(auth_manager.require_auth)
+):
+    """Handle ICE candidate for connection"""
+    
+    try:
+        await webrtc_manager.handle_ice_candidate(connection_id, candidate.dict())
+        return {"message": "ICE candidate processed successfully"}
+        
+    except Exception as e:
+        logger.error(f"Error handling ICE candidate: {e}")
+        raise HTTPException(status_code=500, detail="Failed to process ICE candidate")
+
+@api_router.post("/streams/{stream_id}/start")
+async def start_streaming(
+    stream_id: str,
+    connection_id: str = Form(...),
+    current_user: Dict = Depends(auth_manager.require_model_status("approved"))
+):
+    """Start streaming for a stream"""
+    
+    try:
+        success = await webrtc_manager.start_streaming(stream_id, connection_id)
+        
+        if success:
+            # Update database
+            await db.live_streams.update_one(
+                {"stream_id": stream_id},
+                {"$set": {"is_active": True, "started_at": datetime.now(timezone.utc)}}
+            )
+            
+            # Notify WebSocket connections
+            await websocket_manager.notify_stream_started(
+                stream_id, 
+                current_user["user_id"], 
+                "Live Stream Started"
+            )
+            
+            return {"message": "Streaming started successfully"}
+        else:
+            raise HTTPException(status_code=400, detail="Failed to start streaming")
+            
+    except Exception as e:
+        logger.error(f"Error starting stream: {e}")
+        raise HTTPException(status_code=500, detail="Failed to start stream")
+
+@api_router.post("/streams/{stream_id}/join")
+async def join_stream(
+    stream_id: str,
+    connection_id: str = Form(...),
+    current_user: Optional[Dict] = Depends(auth_manager.get_current_user)
+):
+    """Join stream as viewer"""
+    
+    try:
+        # Check if user can access this stream
+        stream_info = await webrtc_manager.get_stream_info(stream_id)
+        if not stream_info:
+            raise HTTPException(status_code=404, detail="Stream not found")
+        
+        # Check access permissions
+        if current_user:
+            can_access = auth_manager.validate_stream_access(
+                current_user, 
+                stream_info["stream_type"], 
+                stream_info["streamer_id"]
+            )
+            if not can_access:
+                raise HTTPException(status_code=403, detail="Stream access denied")
+        else:
+            # Anonymous users can only access public streams
+            if stream_info["stream_type"] != "public":
+                raise HTTPException(status_code=401, detail="Authentication required")
+        
+        # Join the stream
+        success = await webrtc_manager.join_stream_as_viewer(stream_id, connection_id)
+        
+        if success:
+            return {"message": "Joined stream successfully"}
+        else:
+            raise HTTPException(status_code=400, detail="Failed to join stream")
+            
+    except Exception as e:
+        logger.error(f"Error joining stream: {e}")
+        raise HTTPException(status_code=500, detail="Failed to join stream")
+
+# =====================
+# TIP/PAYMENT ENDPOINTS FOR STREAMS
+# =====================
+
+@api_router.post("/streams/{stream_id}/tip")
+async def send_tip(
+    stream_id: str,
+    tip_data: TipRequest,
+    request: Request,
+    current_user: Dict = Depends(auth_manager.require_auth)
+):
+    """Send tip to streamer during live stream"""
+    
+    # Verify stream exists and is active
+    stream_info = await webrtc_manager.get_stream_info(stream_id)
+    if not stream_info or not stream_info["is_active"]:
+        raise HTTPException(status_code=404, detail="Stream not found or not active")
+    
+    # Validate tip amount (minimum $1, maximum $500)
+    if tip_data.amount < 1.0 or tip_data.amount > 500.0:
+        raise HTTPException(status_code=400, detail="Tip amount must be between $1 and $500")
+    
+    try:
+        # Get Stripe API key
+        stripe_api_key = os.environ.get('STRIPE_API_KEY')
+        if not stripe_api_key:
+            raise HTTPException(status_code=500, detail="Payment system not configured")
+        
+        # Initialize Stripe checkout
+        host_url = str(request.base_url).rstrip('/')
+        webhook_url = f"{host_url}/api/webhook/stripe"
+        stripe_checkout = StripeCheckout(api_key=stripe_api_key, webhook_url=webhook_url)
+        
+        # Create checkout session for tip
+        success_url = f"{host_url}/tip-success?session_id={{CHECKOUT_SESSION_ID}}"
+        cancel_url = f"{host_url}/streams/{stream_id}"
+        
+        checkout_request = CheckoutSessionRequest(
+            amount=tip_data.amount,
+            currency="usd",
+            success_url=success_url,
+            cancel_url=cancel_url,
+            metadata={
+                "type": "tip",
+                "stream_id": stream_id,
+                "streamer_id": stream_info["streamer_id"],
+                "tipper_id": current_user["user_id"],
+                "message": tip_data.message or ""
+            }
+        )
+        
+        session = await stripe_checkout.create_checkout_session(checkout_request)
+        
+        # Create payment transaction record
+        transaction = PaymentTransaction(
+            session_id=session.session_id,
+            amount=tip_data.amount,
+            currency="usd",
+            payment_status="pending",
+            metadata={
+                "type": "tip",
+                "stream_id": stream_id,
+                "streamer_id": stream_info["streamer_id"],
+                "tipper_id": current_user["user_id"],
+                "message": tip_data.message or ""
+            }
+        )
+        
+        await db.payment_transactions.insert_one(transaction.dict())
+        
+        return {
+            "checkout_url": session.url,
+            "session_id": session.session_id,
+            "amount": tip_data.amount
+        }
+        
+    except Exception as e:
+        logger.error(f"Error creating tip checkout: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create tip checkout")
+
+# =====================
+# WEBSOCKET ENDPOINT
+# =====================
+
+@app.websocket("/ws/stream/{stream_id}")
+async def websocket_stream_endpoint(websocket: WebSocket, stream_id: str):
+    """WebSocket endpoint for stream signaling and chat"""
+    
+    connection_id = None
+    try:
+        # For now, we'll accept anonymous connections
+        # In production, you'd want to authenticate via query params or headers
+        user_id = f"anonymous_{uuid.uuid4().hex[:8]}"
+        
+        # Connect to WebSocket manager
+        connection_id = await websocket_manager.connect(websocket, user_id)
+        
+        # Join stream room
+        await websocket_manager.join_stream_room(connection_id, stream_id)
+        
+        # Listen for messages
+        while True:
+            try:
+                data = await websocket.receive_text()
+                await websocket_manager.handle_message(connection_id, data)
+            except WebSocketDisconnect:
+                break
+            except Exception as e:
+                logger.error(f"WebSocket message error: {e}")
+                break
+                
+    except Exception as e:
+        logger.error(f"WebSocket connection error: {e}")
+    finally:
+        if connection_id:
+            await websocket_manager.disconnect(connection_id)
+
 # Include the router in the main app
 app.include_router(api_router)
 
