@@ -48,9 +48,10 @@ export const AuthProvider = ({ children }) => {
     initAuth();
   }, []);
 
-  const login = async (usernameOrEmail, password) => {
+  const login = async (usernameOrEmail, password, userType = 'viewer') => {
     try {
-      const response = await axios.post(`${API}/auth/login`, {
+      const endpoint = userType === 'model' ? '/auth/model/login' : '/auth/viewer/login';
+      const response = await axios.post(`${API}${endpoint}`, {
         username_or_email: usernameOrEmail,
         password: password
       });
@@ -80,7 +81,8 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     try {
-      const response = await axios.post(`${API}/auth/register`, userData);
+      // Always register as viewer through the viewer endpoint
+      const response = await axios.post(`${API}/auth/viewer/register`, userData);
 
       const { access_token, user: newUser } = response.data;
 
@@ -101,6 +103,36 @@ export const AuthProvider = ({ children }) => {
       return {
         success: false,
         error: error.response?.data?.detail || 'Registration failed'
+      };
+    }
+  };
+
+  const modelLogin = async (email, password) => {
+    try {
+      const response = await axios.post(`${API}/auth/model/login`, {
+        username_or_email: email,
+        password: password
+      });
+
+      const { access_token, user: userData } = response.data;
+
+      // Store token and user data
+      Cookies.set('auth_token', access_token, { expires: 1, secure: true, sameSite: 'strict' });
+      localStorage.setItem('user_data', JSON.stringify(userData));
+
+      setToken(access_token);
+      setUser(userData);
+      setIsAuthenticated(true);
+
+      // Set axios default header
+      axios.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
+
+      return { success: true, user: userData };
+    } catch (error) {
+      console.error('Model login error:', error);
+      return {
+        success: false,
+        error: error.response?.data?.detail || 'Model login failed'
       };
     }
   };
