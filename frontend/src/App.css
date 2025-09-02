@@ -1398,25 +1398,29 @@ body {
   margin-left: 4px;
 }
 
-.login-btn {
+.viewer-login-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   background: none;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #ffffff;
-  padding: 8px 16px;
+  border: 1px solid rgba(74, 144, 226, 0.4);
+  color: #4a90e2;
+  padding: 8px 14px;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
 }
 
-.login-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.4);
+.viewer-login-btn:hover {
+  background: rgba(74, 144, 226, 0.1);
+  border-color: rgba(74, 144, 226, 0.6);
+  color: #66a3ff;
 }
 
-.signup-btn {
-  background: linear-gradient(135deg, #e53e3e, #c53030);
+.viewer-signup-btn {
+  background: linear-gradient(135deg, #4a90e2, #357abd);
   border: none;
   color: #ffffff;
   padding: 8px 16px;
@@ -1427,28 +1431,31 @@ body {
   transition: all 0.2s;
 }
 
-.signup-btn:hover {
-  background: linear-gradient(135deg, #c53030, #a02727);
+.viewer-signup-btn:hover {
+  background: linear-gradient(135deg, #357abd, #2968a3);
   transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
 }
 
-.model-signup-btn {
+.model-login-btn {
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
+  gap: 8px;
   background: linear-gradient(135deg, #ffd700, #ffb347);
   border: none;
-  border-radius: 6px;
   color: #000000;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
 }
 
-.model-signup-btn:hover {
+.model-login-btn:hover {
   background: linear-gradient(135deg, #ffb347, #ffa500);
   transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
 }
 
 .auth-loading {
