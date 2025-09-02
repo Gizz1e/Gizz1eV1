@@ -1295,6 +1295,180 @@ body {
   100% { transform: rotate(360deg); }
 }
 
+/* Authentication and Streaming UI Styles */
+.streaming-btn {
+  background: linear-gradient(135deg, #e53e3e, #c53030) !important;
+  color: #ffffff !important;
+  font-weight: 600;
+  animation: pulseGlow 2s infinite;
+}
+
+.streaming-btn:hover {
+  background: linear-gradient(135deg, #c53030, #a02727) !important;
+  transform: translateY(-2px);
+}
+
+.user-dropdown {
+  position: relative;
+}
+
+.profile-avatar.authenticated {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.profile-avatar.authenticated:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.username {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.dropdown-content {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  background: rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 12px 0;
+  min-width: 200px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+
+.user-dropdown:hover .dropdown-content {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.dropdown-content button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 20px;
+  border: none;
+  background: none;
+  color: #ffffff;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.dropdown-content button:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.auth-buttons {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.login-btn {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.login-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.signup-btn {
+  background: linear-gradient(135deg, #e53e3e, #c53030);
+  border: none;
+  color: #ffffff;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.signup-btn:hover {
+  background: linear-gradient(135deg, #c53030, #a02727);
+  transform: translateY(-1px);
+}
+
+.model-signup-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, #ffd700, #ffb347);
+  border: none;
+  border-radius: 6px;
+  color: #000000;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.model-signup-btn:hover {
+  background: linear-gradient(135deg, #ffb347, #ffa500);
+  transform: translateY(-1px);
+}
+
+.auth-loading {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  color: #ffffff;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top: 3px solid #e53e3e;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 /* Netflix Footer */
 .netflix-footer {
   background: #0a0a0a;
