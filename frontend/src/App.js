@@ -1348,6 +1348,11 @@ function AppContent() {
       <NetflixHeader 
         activeSection={activeSection}
         setActiveSection={setActiveSection}
+        showAuthModal={showAuthModal}
+        setShowAuthModal={setShowAuthModal}
+        setAuthModalMode={setAuthModalMode}
+        setShowModelApplication={setShowModelApplication}
+        setShowLiveStreaming={setShowLiveStreaming}
       />
       
       <main className="netflix-main">
