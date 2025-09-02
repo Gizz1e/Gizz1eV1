@@ -303,7 +303,11 @@ const NetflixHeader = ({
   setShowAuthModal, 
   setAuthModalMode, 
   setShowModelApplication, 
-  setShowLiveStreaming 
+  setShowLiveStreaming,
+  user,
+  isAuthenticated,
+  canCreateStreams,
+  logout
 }) => {
   const [isScrolled, setIsScrolled] = useState(false);
 
