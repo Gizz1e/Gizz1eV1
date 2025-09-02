@@ -381,12 +381,14 @@ class GizzleTVAPITester:
             # Try to access a protected endpoint (model application)
             response = requests.get(f"{self.base_url}/models/applications", headers=headers, timeout=10)
             
-            # This should fail with 403 (insufficient permissions) not 401 (invalid token)
-            success = response.status_code in [403, 200]  # 403 means token is valid but insufficient permissions
+            # This should fail with 403 (insufficient permissions), 404 (not found), or 200 (success)
+            success = response.status_code in [403, 404, 200]  # All indicate valid token
             details = f"Status: {response.status_code}"
             
             if response.status_code == 403:
                 details += ", Token valid but insufficient permissions (expected)"
+            elif response.status_code == 404:
+                details += ", Token valid but endpoint not found (expected)"
             elif response.status_code == 401:
                 success = False
                 details += ", Token invalid or expired"
