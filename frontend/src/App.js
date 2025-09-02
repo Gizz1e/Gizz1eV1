@@ -1394,11 +1394,17 @@ function AppContent() {
         />
       )}
 
-      {/* Authentication Modal */}
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        initialMode={authModalMode}
+      {/* Viewer Authentication Modal */}
+      <ViewerAuth
+        isOpen={showViewerAuth}
+        onClose={() => setShowViewerAuth(false)}
+        initialMode={viewerAuthMode}
+      />
+
+      {/* Model Login Modal */}
+      <ModelLogin
+        isOpen={showModelLogin}
+        onClose={() => setShowModelLogin(false)}
       />
 
       {/* Model Application Modal */}
