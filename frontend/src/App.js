@@ -296,7 +296,15 @@ const VideoPlayer = ({ isOpen, onClose, videoSrc, title, description, poster }) 
 };
 
 // Netflix-style Header
-const NetflixHeader = ({ activeSection, setActiveSection }) => {
+const NetflixHeader = ({ 
+  activeSection, 
+  setActiveSection, 
+  showAuthModal, 
+  setShowAuthModal, 
+  setAuthModalMode, 
+  setShowModelApplication, 
+  setShowLiveStreaming 
+}) => {
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
