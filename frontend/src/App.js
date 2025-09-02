@@ -588,7 +588,7 @@ const ContentRow = ({ title, items, onItemClick }) => {
 };
 
 // Models Section Component
-const ModelsSection = ({ onVideoClick }) => {
+const ModelsSection = ({ onVideoClick, onBecomeModel }) => {
   const [models, setModels] = useState([]);
   const [loading, setLoading] = useState(true);
 
