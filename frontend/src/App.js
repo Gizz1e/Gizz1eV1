@@ -409,13 +409,16 @@ const NetflixHeader = ({
           Store
         </button>
         
-        {/* Authentication UI */}
+        {/* Dual Authentication UI */}
         <div className="profile-menu">
           {isAuthenticated ? (
             <div className="user-dropdown">
               <div className="profile-avatar authenticated">
                 <User size={20} />
                 <span className="username">{user?.username}</span>
+                <span className="account-badge">
+                  {user?.account_type === 'model' ? '👑' : '👤'}
+                </span>
               </div>
               <div className="dropdown-content">
                 {user?.is_model && user?.model_verification_status === 'pending' && (
@@ -437,33 +440,37 @@ const NetflixHeader = ({
             </div>
           ) : (
             <div className="auth-buttons">
+              <div className="viewer-auth-section">
+                <button 
+                  className="viewer-login-btn"
+                  onClick={() => {
+                    setViewerAuthMode('login');
+                    setShowViewerAuth(true);
+                  }}
+                >
+                  <User size={16} />
+                  Sign In
+                </button>
+                <button 
+                  className="viewer-signup-btn"
+                  onClick={() => {
+                    setViewerAuthMode('register');
+                    setShowViewerAuth(true);
+                  }}
+                >
+                  Join Now
+                </button>
+              </div>
+              
+              <div className="divider">|</div>
+              
               <button 
-                className="login-btn"
-                onClick={() => {
-                  setAuthModalMode('login');
-                  setShowAuthModal(true);
-                }}
-              >
-                Login
-              </button>
-              <button 
-                className="signup-btn"
-                onClick={() => {
-                  setAuthModalMode('register');
-                  setShowAuthModal(true);
-                }}
-              >
-                Sign Up
-              </button>
-              <button 
-                className="model-signup-btn"
-                onClick={() => {
-                  setAuthModalMode('model-register');
-                  setShowAuthModal(true);
-                }}
-                title="Apply as Model"
+                className="model-login-btn"
+                onClick={() => setShowModelLogin(true)}
+                title="Model Portal Access"
               >
                 <Shield size={16} />
+                Model Login
               </button>
             </div>
           )}
