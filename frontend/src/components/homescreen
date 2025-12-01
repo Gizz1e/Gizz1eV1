@@ -1,0 +1,163 @@
+// HomeSection.jsx
+import React from "react";
+
+const HomeSection = ({ setActiveSection }) => {
+  return (
+    <>
+      <section className="home-section">
+        <header className="home-hero">
+          <div>
+            <h1>Welcome to Gizzle TV</h1>
+            <p>Discover live streams, premium videos, pictures, and more.</p>
+          </div>
+        </header>
+
+        <div className="home-quick-grid">
+          <button
+            type="button"
+            className="home-card live"
+            onClick={() => setActiveSection("live-streams")}
+          >
+            <h3>Live Streams</h3>
+            <p>Watch your favorite models in real time.</p>
+          </button>
+
+          <button
+            type="button"
+            className="home-card videos"
+            onClick={() => setActiveSection("videos")}
+          >
+            <h3>Videos</h3>
+            <p>Explore trending and exclusive clips.</p>
+          </button>
+
+          <button
+            type="button"
+            className="home-card pictures"
+            onClick={() => setActiveSection("pictures")}
+          >
+            <h3>Pictures</h3>
+            <p>Browse curated photo galleries.</p>
+          </button>
+
+          <button
+            type="button"
+            className="home-card community"
+            onClick={() => setActiveSection("community")}
+          >
+            <h3>Community</h3>
+            <p>Connect, follow, and show support.</p>
+          </button>
+        </div>
+      </section>
+
+      <style>{`
+        .home-section {
+          padding: 80px 16px 80px; /* account for mobile header & nav */
+          max-width: 1200px;
+          margin: 0 auto;
+          color: #fff;
+        }
+
+        .home-hero {
+          margin-bottom: 24px;
+        }
+
+        .home-hero h1 {
+          margin: 0 0 8px;
+          font-size: 24px;
+          font-weight: 700;
+        }
+
+        .home-hero p {
+          margin: 0;
+          color: #a0aec0;
+          font-size: 14px;
+        }
+
+        .home-quick-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 12px;
+        }
+
+        .home-card {
+          border: none;
+          border-radius: 12px;
+          padding: 16px;
+          text-align: left;
+          cursor: pointer;
+          transition: transform 0.15s ease, box-shadow 0.15s ease,
+            background 0.15s ease;
+          background: rgba(26, 32, 44, 0.9);
+        }
+
+        .home-card h3 {
+          margin: 0 0 6px;
+          font-size: 15px;
+          font-weight: 600;
+        }
+
+        .home-card p {
+          margin: 0;
+          font-size: 12px;
+          color: #cbd5e0;
+        }
+
+        .home-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 10px 20px rgba(0, 0, 0, 0.35);
+        }
+
+        .home-card.live {
+          background: linear-gradient(
+            135deg,
+            rgba(229, 62, 62, 0.2),
+            rgba(26, 32, 44, 0.9)
+          );
+        }
+
+        .home-card.videos {
+          background: linear-gradient(
+            135deg,
+            rgba(66, 153, 225, 0.2),
+            rgba(26, 32, 44, 0.9)
+          );
+        }
+
+        .home-card.pictures {
+          background: linear-gradient(
+            135deg,
+            rgba(236, 201, 75, 0.2),
+            rgba(26, 32, 44, 0.9)
+          );
+        }
+
+        .home-card.community {
+          background: linear-gradient(
+            135deg,
+            rgba(237, 100, 166, 0.2),
+            rgba(26, 32, 44, 0.9)
+          );
+        }
+
+        @media (max-width: 480px) {
+          .home-hero h1 {
+            font-size: 20px;
+          }
+
+          .home-quick-grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+          }
+
+          .home-card {
+            padding: 14px;
+          }
+        }
+      `}</style>
+    </>
+  );
+};
+
+export default HomeSection;
