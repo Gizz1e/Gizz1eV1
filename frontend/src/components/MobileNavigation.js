@@ -25,16 +25,16 @@ const MobileNavigation = ({
   user,
   logout,
 }) => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [hasMounted, setHasMounted] = useState(false);
 
   useEffect(() => {
-  const checkMobile = () => {
-    if (typeof window === 'undefined') return;
-    const mobile = window.innerWidth <= 768;
-    setIsMobile(mobile);
-    if (!mobile) {
-      setIsMobileMenuOpen(false);
+    setHasMounted(true);
+   // ... existing checkMobile code
+  }, []);
+
+  if (!hasMounted) return null;
+  if (!isMobile) return null;
     }
   };
 
