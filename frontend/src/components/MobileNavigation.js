@@ -1,39 +1,38 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Home, 
-  Video, 
-  Image, 
-  Users, 
-  Crown, 
-  ShoppingBag, 
-  Menu, 
-  X, 
+import {
+  Home,
+  Video,
+  Image,
+  Users,
+  Crown,
+  Menu,
+  X,
   Shield,
   User,
   Settings,
   Search,
   Heart,
-  PlayCircle
+  PlayCircle,
 } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
 
-const MobileNavigation = ({ 
-  activeSection, 
-  setActiveSection, 
-  setShowViewerAuth, 
+const MobileNavigation = ({
+  activeSection,
+  setActiveSection,
+  setShowViewerAuth,
   setViewerAuthMode,
   setShowModelLogin,
   isAuthenticated,
   user,
-  logout 
+  logout,
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
-      if (window.innerWidth > 768) {
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+      if (!mobile) {
         setIsMobileMenuOpen(false);
       }
     };
@@ -50,7 +49,7 @@ const MobileNavigation = ({
     { id: 'gizzle-tv', label: 'Gizzle TV', icon: PlayCircle },
     { id: 'videos', label: 'Videos', icon: Video },
     { id: 'pictures', label: 'Pictures', icon: Image },
-    { id: 'community', label: 'Community', icon: Heart }
+    { id: 'community', label: 'Community', icon: Heart },
   ];
 
   const handleNavClick = (sectionId) => {
@@ -71,6 +70,7 @@ const MobileNavigation = ({
     }
   };
 
+  // Do not render anything on desktop
   if (!isMobile) return null;
 
   return (
@@ -79,7 +79,7 @@ const MobileNavigation = ({
       <div className="mobile-header">
         <div className="mobile-header-content">
           <div className="mobile-logo">
-            <img 
+            <img
               src="https://customer-assets.emergentagent.com/job_media-upload-2/artifacts/ysim4ger_thumbnail_FD3537EB-E493-45C7-8E2E-1C6F4DC548FB.jpg"
               alt="Gizzle TV"
               className="mobile-logo-img"
@@ -88,11 +88,12 @@ const MobileNavigation = ({
           </div>
 
           <div className="mobile-header-actions">
-            <button className="mobile-search-btn">
+            <button className="mobile-search-btn" type="button">
               <Search size={20} />
             </button>
-            <button 
+            <button
               className="mobile-menu-btn"
+              type="button"
               onClick={() => setIsMobileMenuOpen(true)}
             >
               <Menu size={24} />
@@ -106,10 +107,11 @@ const MobileNavigation = ({
         {navigationItems.slice(0, 5).map((item) => {
           const Icon = item.icon;
           const isActive = activeSection === item.id;
-          
+
           return (
             <button
               key={item.id}
+              type="button"
               className={`mobile-nav-item ${isActive ? 'active' : ''}`}
               onClick={() => handleNavClick(item.id)}
             >
@@ -122,15 +124,22 @@ const MobileNavigation = ({
 
       {/* Mobile Slide-Out Menu */}
       {isMobileMenuOpen && (
-        <div className="mobile-menu-overlay" onClick={() => setIsMobileMenuOpen(false)}>
-          <div className="mobile-menu" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="mobile-menu-overlay"
+          onClick={() => setIsMobileMenuOpen(false)}
+        >
+          <div
+            className="mobile-menu"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="mobile-menu-header">
               <div className="mobile-menu-title">
                 <Shield size={24} />
                 <span>Gizzle TV</span>
               </div>
-              <button 
+              <button
                 className="mobile-menu-close"
+                type="button"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <X size={24} />
@@ -150,14 +159,15 @@ const MobileNavigation = ({
                       <p>{user?.account_type || 'Viewer'} Account</p>
                     </div>
                   </div>
-                  
+
                   <div className="mobile-user-actions">
-                    <button className="mobile-action-btn">
+                    <button className="mobile-action-btn" type="button">
                       <Settings size={16} />
                       Settings
                     </button>
-                    <button 
+                    <button
                       className="mobile-action-btn"
+                      type="button"
                       onClick={() => {
                         logout();
                         setIsMobileMenuOpen(false);
@@ -170,25 +180,28 @@ const MobileNavigation = ({
               ) : (
                 <div className="mobile-auth-section">
                   <h3>Join Gizzle TV</h3>
-                  
+
                   <div className="mobile-auth-buttons">
-                    <button 
+                    <button
                       className="mobile-auth-btn viewer"
+                      type="button"
                       onClick={() => handleAuthAction('viewer-signup')}
                     >
                       <User size={18} />
                       Create Viewer Account
                     </button>
-                    
-                    <button 
+
+                    <button
                       className="mobile-auth-btn viewer-login"
+                      type="button"
                       onClick={() => handleAuthAction('viewer-login')}
                     >
                       Sign In
                     </button>
-                    
-                    <button 
+
+                    <button
                       className="mobile-auth-btn model"
+                      type="button"
                       onClick={() => handleAuthAction('model-login')}
                     >
                       <Shield size={18} />
@@ -205,11 +218,14 @@ const MobileNavigation = ({
                   {navigationItems.map((item) => {
                     const Icon = item.icon;
                     const isActive = activeSection === item.id;
-                    
+
                     return (
                       <button
                         key={item.id}
-                        className={`mobile-nav-list-item ${isActive ? 'active' : ''}`}
+                        type="button"
+                        className={`mobile-nav-list-item ${
+                          isActive ? 'active' : ''
+                        }`}
                         onClick={() => handleNavClick(item.id)}
                       >
                         <Icon size={20} />
@@ -235,7 +251,7 @@ const MobileNavigation = ({
         </div>
       )}
 
-      <style jsx>{`
+      <style>{`
         .mobile-header {
           display: block;
           position: fixed;
@@ -546,7 +562,11 @@ const MobileNavigation = ({
           display: flex;
           align-items: center;
           gap: 12px;
-          background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 152, 0, 0.05));
+          background: linear-gradient(
+            135deg,
+            rgba(255, 215, 0, 0.1),
+            rgba(255, 152, 0, 0.05)
+          );
           border: 1px solid rgba(255, 215, 0, 0.3);
           border-radius: 12px;
           padding: 16px;
@@ -581,11 +601,11 @@ const MobileNavigation = ({
           .mobile-menu {
             width: 100%;
           }
-          
+
           .mobile-nav-item {
             font-size: 10px;
           }
-          
+
           .mobile-header-content {
             padding: 10px 12px;
           }
