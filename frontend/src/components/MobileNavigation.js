@@ -29,18 +29,22 @@ const MobileNavigation = ({
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    const checkMobile = () => {
-      const mobile = window.innerWidth <= 768;
-      setIsMobile(mobile);
-      if (!mobile) {
-        setIsMobileMenuOpen(false);
-      }
-    };
+  const checkMobile = () => {
+    if (typeof window === 'undefined') return;
+    const mobile = window.innerWidth <= 768;
+    setIsMobile(mobile);
+    if (!mobile) {
+      setIsMobileMenuOpen(false);
+    }
+  };
 
-    checkMobile();
+  checkMobile();
+
+  if (typeof window !== 'undefined') {
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+  }
+}, []);
 
   const navigationItems = [
     { id: 'home', label: 'Home', icon: Home },
