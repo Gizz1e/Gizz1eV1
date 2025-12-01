@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+"use client";
+
+import React, { useState, useEffect } from "react";
 import {
   Home,
   Video,
@@ -13,7 +15,17 @@ import {
   Search,
   Heart,
   PlayCircle,
-} from 'lucide-react';
+} from "lucide-react";
+
+const navigationItems = [
+  { id: "home", label: "Home", icon: Home },
+  { id: "live-streams", label: "Live", icon: Video },
+  { id: "models", label: "Models", icon: Users },
+  { id: "gizzle-tv", label: "Gizzle TV", icon: PlayCircle },
+  { id: "videos", label: "Videos", icon: Video },
+  { id: "pictures", label: "Pictures", icon: Image },
+  { id: "community", label: "Community", icon: Heart },
+];
 
 const MobileNavigation = ({
   activeSection,
@@ -25,36 +37,29 @@ const MobileNavigation = ({
   user,
   logout,
 }) => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [hasMounted, setHasMounted] = useState(false);
 
   useEffect(() => {
     setHasMounted(true);
-   // ... existing checkMobile code
-  }, []);
 
-  if (!hasMounted) return null;
-  if (!isMobile) return null;
+    const checkMobile = () => {
+      if (typeof window === "undefined") return;
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+      if (!mobile) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    checkMobile();
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("resize", checkMobile);
+      return () => window.removeEventListener("resize", checkMobile);
     }
-  };
-
-  checkMobile();
-
-  if (typeof window !== 'undefined') {
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }
-}, []);
-
-  const navigationItems = [
-    { id: 'home', label: 'Home', icon: Home },
-    { id: 'live-streams', label: 'Live', icon: Video },
-    { id: 'models', label: 'Models', icon: Users },
-    { id: 'gizzle-tv', label: 'Gizzle TV', icon: PlayCircle },
-    { id: 'videos', label: 'Videos', icon: Video },
-    { id: 'pictures', label: 'Pictures', icon: Image },
-    { id: 'community', label: 'Community', icon: Heart },
-  ];
+  }, []);
 
   const handleNavClick = (sectionId) => {
     setActiveSection(sectionId);
@@ -63,19 +68,19 @@ const MobileNavigation = ({
 
   const handleAuthAction = (action) => {
     setIsMobileMenuOpen(false);
-    if (action === 'viewer-login') {
-      setViewerAuthMode('login');
+    if (action === "viewer-login") {
+      setViewerAuthMode("login");
       setShowViewerAuth(true);
-    } else if (action === 'viewer-signup') {
-      setViewerAuthMode('register');
+    } else if (action === "viewer-signup") {
+      setViewerAuthMode("register");
       setShowViewerAuth(true);
-    } else if (action === 'model-login') {
+    } else if (action === "model-login") {
       setShowModelLogin(true);
     }
   };
 
-  // Do not render anything on desktop
-  if (!isMobile) return null;
+  // Do not render anything until mounted, or when not on mobile
+  if (!hasMounted || !isMobile) return null;
 
   return (
     <>
@@ -92,12 +97,17 @@ const MobileNavigation = ({
           </div>
 
           <div className="mobile-header-actions">
-            <button className="mobile-search-btn" type="button">
+            <button
+              className="mobile-search-btn"
+              type="button"
+              aria-label="Search"
+            >
               <Search size={20} />
             </button>
             <button
               className="mobile-menu-btn"
               type="button"
+              aria-label="Open navigation menu"
               onClick={() => setIsMobileMenuOpen(true)}
             >
               <Menu size={24} />
@@ -107,7 +117,7 @@ const MobileNavigation = ({
       </div>
 
       {/* Mobile Bottom Navigation */}
-      <div className="mobile-bottom-nav">
+      <div className="mobile-bottom-nav" aria-label="Primary navigation">
         {navigationItems.slice(0, 5).map((item) => {
           const Icon = item.icon;
           const isActive = activeSection === item.id;
@@ -116,8 +126,9 @@ const MobileNavigation = ({
             <button
               key={item.id}
               type="button"
-              className={`mobile-nav-item ${isActive ? 'active' : ''}`}
+              className={`mobile-nav-item ${isActive ? "active" : ""}`}
               onClick={() => handleNavClick(item.id)}
+              aria-pressed={isActive}
             >
               <Icon size={20} />
               <span>{item.label}</span>
@@ -135,6 +146,9 @@ const MobileNavigation = ({
           <div
             className="mobile-menu"
             onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Gizzle TV navigation menu"
           >
             <div className="mobile-menu-header">
               <div className="mobile-menu-title">
@@ -144,6 +158,7 @@ const MobileNavigation = ({
               <button
                 className="mobile-menu-close"
                 type="button"
+                aria-label="Close navigation menu"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <X size={24} />
@@ -160,12 +175,16 @@ const MobileNavigation = ({
                     </div>
                     <div className="mobile-user-details">
                       <h4>{user?.username}</h4>
-                      <p>{user?.account_type || 'Viewer'} Account</p>
+                      <p>{user?.account_type || "Viewer"} Account</p>
                     </div>
                   </div>
 
                   <div className="mobile-user-actions">
-                    <button className="mobile-action-btn" type="button">
+                    <button
+                      className="mobile-action-btn"
+                      type="button"
+                      aria-label="User settings"
+                    >
                       <Settings size={16} />
                       Settings
                     </button>
@@ -176,6 +195,7 @@ const MobileNavigation = ({
                         logout();
                         setIsMobileMenuOpen(false);
                       }}
+                      aria-label="Logout"
                     >
                       Logout
                     </button>
@@ -189,7 +209,7 @@ const MobileNavigation = ({
                     <button
                       className="mobile-auth-btn viewer"
                       type="button"
-                      onClick={() => handleAuthAction('viewer-signup')}
+                      onClick={() => handleAuthAction("viewer-signup")}
                     >
                       <User size={18} />
                       Create Viewer Account
@@ -198,7 +218,7 @@ const MobileNavigation = ({
                     <button
                       className="mobile-auth-btn viewer-login"
                       type="button"
-                      onClick={() => handleAuthAction('viewer-login')}
+                      onClick={() => handleAuthAction("viewer-login")}
                     >
                       Sign In
                     </button>
@@ -206,7 +226,7 @@ const MobileNavigation = ({
                     <button
                       className="mobile-auth-btn model"
                       type="button"
-                      onClick={() => handleAuthAction('model-login')}
+                      onClick={() => handleAuthAction("model-login")}
                     >
                       <Shield size={18} />
                       Model Portal
@@ -228,9 +248,10 @@ const MobileNavigation = ({
                         key={item.id}
                         type="button"
                         className={`mobile-nav-list-item ${
-                          isActive ? 'active' : ''
+                          isActive ? "active" : ""
                         }`}
                         onClick={() => handleNavClick(item.id)}
+                        aria-pressed={isActive}
                       >
                         <Icon size={20} />
                         <span>{item.label}</span>
