@@ -1,643 +1,247 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import {
-  Home,
-  Video,
-  Image,
-  Users,
-  Crown,
-  Menu,
-  X,
-  Shield,
-  User,
-  Settings,
-  Search,
-  Heart,
-  PlayCircle,
-} from "lucide-react";
+import React, { useState } from "react";
+import MobileNavigation from "./MobileNavigation";
 
-const navigationItems = [
-  { id: "home", label: "Home", icon: Home },
-  { id: "live-streams", label: "Live", icon: Video },
-  { id: "models", label: "Models", icon: Users },
-  { id: "gizzle-tv", label: "Gizzle TV", icon: PlayCircle },
-  { id: "videos", label: "Videos", icon: Video },
-  { id: "pictures", label: "Pictures", icon: Image },
-  { id: "community", label: "Community", icon: Heart },
-];
+// Example placeholder sections – replace with your real components/content
+const HomeSection = () => <div style={{ padding: 16 }}>Home content</div>;
+const LiveStreamsSection = () => <div style={{ padding: 16 }}>Live Streams</div>;
+const ModelsSection = () => <div style={{ padding: 16 }}>Models directory</div>;
+const GizzleTvSection = () => <div style={{ padding: 16 }}>Gizzle TV content</div>;
+const VideosSection = () => <div style={{ padding: 16 }}>Videos</div>;
+const PicturesSection = () => <div style={{ padding: 16 }}>Pictures</div>;
+const CommunitySection = () => <div style={{ padding: 16 }}>Community</div>;
 
-const MobileNavigation = ({
-  activeSection,
-  setActiveSection,
-  setShowViewerAuth,
-  setViewerAuthMode,
-  setShowModelLogin,
-  isAuthenticated,
-  user,
-  logout,
-}) => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-  const [hasMounted, setHasMounted] = useState(false);
+// Map section IDs (must match MobileNavigation's navigationItems) to content
+const SECTION_COMPONENTS = {
+  home: HomeSection,
+  "live-streams": LiveStreamsSection,
+  models: ModelsSection,
+  "gizzle-tv": GizzleTvSection,
+  videos: VideosSection,
+  pictures: PicturesSection,
+  community: CommunitySection,
+};
 
-  useEffect(() => {
-    setHasMounted(true);
+const HomeScreen = () => {
+  // Main navigation state (shared with MobileNavigation and home screen buttons)
+  const [activeSection, setActiveSection] = useState("home");
 
-    const checkMobile = () => {
-      if (typeof window === "undefined") return;
-      const mobile = window.innerWidth <= 768;
-      setIsMobile(mobile);
-      if (!mobile) {
-        setIsMobileMenuOpen(false);
-      }
-    };
+  // Auth-related state (wire these into your real auth system)
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState({
+    username: "Guest",
+    account_type: "Viewer",
+  });
 
-    checkMobile();
+  const [showViewerAuth, setShowViewerAuth] = useState(false);
+  const [viewerAuthMode, setViewerAuthMode] = useState("login"); // "login" | "register"
+  const [showModelLogin, setShowModelLogin] = useState(false);
 
-    if (typeof window !== "undefined") {
-      window.addEventListener("resize", checkMobile);
-      return () => window.removeEventListener("resize", checkMobile);
-    }
-  }, []);
-
-  const handleNavClick = (sectionId) => {
-    setActiveSection(sectionId);
-    setIsMobileMenuOpen(false);
+  const logout = () => {
+    // Replace with your real logout logic
+    setIsAuthenticated(false);
+    setUser({ username: "Guest", account_type: "Viewer" });
   };
 
-  const handleAuthAction = (action) => {
-    setIsMobileMenuOpen(false);
-    if (action === "viewer-login") {
-      setViewerAuthMode("login");
-      setShowViewerAuth(true);
-    } else if (action === "viewer-signup") {
-      setViewerAuthMode("register");
-      setShowViewerAuth(true);
-    } else if (action === "model-login") {
-      setShowModelLogin(true);
-    }
-  };
-
-  // Do not render anything until mounted, or when not on mobile
-  if (!hasMounted || !isMobile) return null;
+  const CurrentSectionComponent =
+    SECTION_COMPONENTS[activeSection] || SECTION_COMPONENTS.home;
 
   return (
-    <>
-      {/* Mobile Header Bar */}
-      <div className="mobile-header">
-        <div className="mobile-header-content">
-          <div className="mobile-logo">
-            <img
-              src="https://customer-assets.emergentagent.com/job_media-upload-2/artifacts/ysim4ger_thumbnail_FD3537EB-E493-45C7-8E2E-1C6F4DC548FB.jpg"
-              alt="Gizzle TV"
-              className="mobile-logo-img"
-            />
-            <span>Gizzle TV</span>
-          </div>
+    <div className="app-root">
+      {/* Example desktop/top "Home Screen" buttons */}
+      <header className="desktop-header">
+        <div className="desktop-header-inner">
+          <div className="desktop-logo">Gizzle TV</div>
 
-          <div className="mobile-header-actions">
-            <button
-              className="mobile-search-btn"
-              type="button"
-              aria-label="Search"
-            >
-              <Search size={20} />
-            </button>
-            <button
-              className="mobile-menu-btn"
-              type="button"
-              aria-label="Open navigation menu"
-              onClick={() => setIsMobileMenuOpen(true)}
-            >
-              <Menu size={24} />
-            </button>
+          <nav className="desktop-nav">
+            <button onClick={() => setActiveSection("home")}>Home</button>
+            <button onClick={() => setActiveSection("live-streams")}>Live</button>
+            <button onClick={() => setActiveSection("models")}>Models</button>
+            <button onClick={() => setActiveSection("gizzle-tv")}>Gizzle TV</button>
+            <button onClick={() => setActiveSection("videos")}>Videos</button>
+            <button onClick={() => setActiveSection("pictures")}>Pictures</button>
+            <button onClick={() => setActiveSection("community")}>Community</button>
+          </nav>
+
+          <div className="desktop-auth">
+            {isAuthenticated ? (
+              <>
+                <span>Hi, {user.username}</span>
+                <button onClick={logout}>Logout</button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => {
+                    setViewerAuthMode("login");
+                    setShowViewerAuth(true);
+                  }}
+                >
+                  Sign In
+                </button>
+                <button
+                  onClick={() => {
+                    setViewerAuthMode("register");
+                    setShowViewerAuth(true);
+                  }}
+                >
+                  Join
+                </button>
+              </>
+            )}
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* Mobile Bottom Navigation */}
-      <div className="mobile-bottom-nav" aria-label="Primary navigation">
-        {navigationItems.slice(0, 5).map((item) => {
-          const Icon = item.icon;
-          const isActive = activeSection === item.id;
+      {/* Main page content switches based on activeSection */}
+      <main className="main-content">
+        <CurrentSectionComponent />
+      </main>
 
-          return (
-            <button
-              key={item.id}
-              type="button"
-              className={`mobile-nav-item ${isActive ? "active" : ""}`}
-              onClick={() => handleNavClick(item.id)}
-              aria-pressed={isActive}
-            >
-              <Icon size={20} />
-              <span>{item.label}</span>
-            </button>
-          );
-        })}
-      </div>
+      {/* Mobile navigation bar & slide-out menu */}
+      <MobileNavigation
+        activeSection={activeSection}
+        setActiveSection={setActiveSection}
+        setShowViewerAuth={setShowViewerAuth}
+        setViewerAuthMode={setViewerAuthMode}
+        setShowModelLogin={setShowModelLogin}
+        isAuthenticated={isAuthenticated}
+        user={user}
+        logout={logout}
+      />
 
-      {/* Mobile Slide-Out Menu */}
-      {isMobileMenuOpen && (
-        <div
-          className="mobile-menu-overlay"
-          onClick={() => setIsMobileMenuOpen(false)}
-        >
-          <div
-            className="mobile-menu"
-            onClick={(e) => e.stopPropagation()}
-            role="dialog"
-            aria-modal="true"
-            aria-label="Gizzle TV navigation menu"
-          >
-            <div className="mobile-menu-header">
-              <div className="mobile-menu-title">
-                <Shield size={24} />
-                <span>Gizzle TV</span>
-              </div>
-              <button
-                className="mobile-menu-close"
-                type="button"
-                aria-label="Close navigation menu"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                <X size={24} />
-              </button>
-            </div>
-
-            <div className="mobile-menu-content">
-              {/* User Section */}
-              {isAuthenticated ? (
-                <div className="mobile-user-section">
-                  <div className="mobile-user-info">
-                    <div className="mobile-user-avatar">
-                      <User size={24} />
-                    </div>
-                    <div className="mobile-user-details">
-                      <h4>{user?.username}</h4>
-                      <p>{user?.account_type || "Viewer"} Account</p>
-                    </div>
-                  </div>
-
-                  <div className="mobile-user-actions">
-                    <button
-                      className="mobile-action-btn"
-                      type="button"
-                      aria-label="User settings"
-                    >
-                      <Settings size={16} />
-                      Settings
-                    </button>
-                    <button
-                      className="mobile-action-btn"
-                      type="button"
-                      onClick={() => {
-                        logout();
-                        setIsMobileMenuOpen(false);
-                      }}
-                      aria-label="Logout"
-                    >
-                      Logout
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="mobile-auth-section">
-                  <h3>Join Gizzle TV</h3>
-
-                  <div className="mobile-auth-buttons">
-                    <button
-                      className="mobile-auth-btn viewer"
-                      type="button"
-                      onClick={() => handleAuthAction("viewer-signup")}
-                    >
-                      <User size={18} />
-                      Create Viewer Account
-                    </button>
-
-                    <button
-                      className="mobile-auth-btn viewer-login"
-                      type="button"
-                      onClick={() => handleAuthAction("viewer-login")}
-                    >
-                      Sign In
-                    </button>
-
-                    <button
-                      className="mobile-auth-btn model"
-                      type="button"
-                      onClick={() => handleAuthAction("model-login")}
-                    >
-                      <Shield size={18} />
-                      Model Portal
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Navigation Menu */}
-              <div className="mobile-nav-section">
-                <h3>Navigation</h3>
-                <div className="mobile-nav-list">
-                  {navigationItems.map((item) => {
-                    const Icon = item.icon;
-                    const isActive = activeSection === item.id;
-
-                    return (
-                      <button
-                        key={item.id}
-                        type="button"
-                        className={`mobile-nav-list-item ${
-                          isActive ? "active" : ""
-                        }`}
-                        onClick={() => handleNavClick(item.id)}
-                        aria-pressed={isActive}
-                      >
-                        <Icon size={20} />
-                        <span>{item.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Premium Section */}
-              <div className="mobile-premium-section">
-                <div className="mobile-premium-card">
-                  <Crown size={20} />
-                  <div>
-                    <h4>Upgrade to Premium</h4>
-                    <p>Unlock exclusive content and features</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+      {/* Simple stubs: viewer auth/modal & model login – replace with your components */}
+      {showViewerAuth && (
+        <div className="modal-backdrop" onClick={() => setShowViewerAuth(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h2>{viewerAuthMode === "login" ? "Sign In" : "Create Viewer Account"}</h2>
+            <p>Replace this with your real viewer auth form.</p>
+            <button onClick={() => setShowViewerAuth(false)}>Close</button>
           </div>
         </div>
       )}
 
+      {showModelLogin && (
+        <div className="modal-backdrop" onClick={() => setShowModelLogin(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h2>Model Portal Login</h2>
+            <p>Replace this with your real model login form.</p>
+            <button onClick={() => setShowModelLogin(false)}>Close</button>
+          </div>
+        </div>
+      )}
+
+      {/* Very basic styling so you can see it working; move to your CSS files as needed */}
       <style>{`
-        .mobile-header {
-          display: block;
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          z-index: 1000;
-          background: linear-gradient(135deg, #1a1a2e, #16213e);
-          border-bottom: 1px solid rgba(229, 62, 62, 0.2);
-          backdrop-filter: blur(10px);
-        }
-
-        .mobile-header-content {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 12px 16px;
-          max-width: 100%;
-        }
-
-        .mobile-logo {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-        }
-
-        .mobile-logo-img {
-          width: 32px;
-          height: 32px;
-          border-radius: 6px;
-        }
-
-        .mobile-logo span {
-          font-size: 18px;
-          font-weight: 700;
+        .app-root {
+          min-height: 100vh;
+          background: #050816;
           color: #ffffff;
+          padding-top: 56px; /* room for mobile header if reused */
+          padding-bottom: 56px; /* room for mobile bottom nav */
         }
 
-        .mobile-header-actions {
-          display: flex;
-          align-items: center;
-          gap: 12px;
+        .desktop-header {
+          display: none;
         }
 
-        .mobile-search-btn,
-        .mobile-menu-btn {
-          background: rgba(255, 255, 255, 0.1);
-          border: none;
-          border-radius: 8px;
-          padding: 8px;
-          color: #ffffff;
-          cursor: pointer;
-          transition: all 0.2s;
-        }
-
-        .mobile-search-btn:hover,
-        .mobile-menu-btn:hover {
-          background: rgba(255, 255, 255, 0.2);
-        }
-
-        .mobile-bottom-nav {
-          display: flex;
-          position: fixed;
-          bottom: 0;
-          left: 0;
-          right: 0;
-          z-index: 1000;
-          background: linear-gradient(135deg, #1a1a2e, #16213e);
-          border-top: 1px solid rgba(229, 62, 62, 0.2);
-          padding: 8px 0;
-          backdrop-filter: blur(10px);
-        }
-
-        .mobile-nav-item {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 4px;
-          padding: 8px 4px;
-          background: none;
-          border: none;
-          color: #888;
-          cursor: pointer;
-          transition: all 0.2s;
-          font-size: 11px;
-          font-weight: 500;
-        }
-
-        .mobile-nav-item.active {
-          color: #e53e3e;
-        }
-
-        .mobile-nav-item:hover {
-          color: #ffffff;
-        }
-
-        .mobile-menu-overlay {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: rgba(0, 0, 0, 0.8);
-          backdrop-filter: blur(5px);
-          z-index: 2000;
-          display: flex;
-          animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-
-        .mobile-menu {
-          background: linear-gradient(145deg, #1a1a2e, #16213e);
-          width: 85%;
-          max-width: 320px;
-          height: 100%;
-          overflow-y: auto;
-          animation: slideIn 0.3s ease;
-        }
-
-        @keyframes slideIn {
-          from { transform: translateX(-100%); }
-          to { transform: translateX(0); }
-        }
-
-        .mobile-menu-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 20px;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .mobile-menu-title {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          color: #ffffff;
-          font-size: 18px;
-          font-weight: 700;
-        }
-
-        .mobile-menu-title svg {
-          color: #e53e3e;
-        }
-
-        .mobile-menu-close {
-          background: none;
-          border: none;
-          color: #888;
-          cursor: pointer;
-          padding: 4px;
-        }
-
-        .mobile-menu-content {
-          padding: 20px;
-        }
-
-        .mobile-user-section,
-        .mobile-auth-section,
-        .mobile-nav-section,
-        .mobile-premium-section {
-          margin-bottom: 32px;
-          padding-bottom: 24px;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .mobile-user-info {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          margin-bottom: 16px;
-        }
-
-        .mobile-user-avatar {
-          width: 48px;
-          height: 48px;
-          background: linear-gradient(135deg, #e53e3e, #c53030);
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: #ffffff;
-        }
-
-        .mobile-user-details h4 {
-          margin: 0;
-          color: #ffffff;
-          font-size: 16px;
-          font-weight: 600;
-        }
-
-        .mobile-user-details p {
-          margin: 0;
-          color: #888;
-          font-size: 14px;
-        }
-
-        .mobile-user-actions {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-        }
-
-        .mobile-action-btn {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          border-radius: 8px;
-          padding: 12px 16px;
-          color: #ffffff;
-          font-size: 14px;
-          cursor: pointer;
-          transition: all 0.2s;
-        }
-
-        .mobile-action-btn:hover {
-          background: rgba(255, 255, 255, 0.1);
-        }
-
-        .mobile-auth-section h3,
-        .mobile-nav-section h3 {
-          margin: 0 0 16px 0;
-          color: #ffffff;
-          font-size: 16px;
-          font-weight: 600;
-        }
-
-        .mobile-auth-buttons {
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-        }
-
-        .mobile-auth-btn {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 10px;
-          padding: 14px 20px;
-          border: none;
-          border-radius: 10px;
-          font-size: 15px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.2s;
-        }
-
-        .mobile-auth-btn.viewer {
-          background: linear-gradient(135deg, #4a90e2, #357abd);
-          color: #ffffff;
-        }
-
-        .mobile-auth-btn.viewer-login {
-          background: none;
-          border: 1px solid rgba(74, 144, 226, 0.4);
-          color: #4a90e2;
-        }
-
-        .mobile-auth-btn.model {
-          background: linear-gradient(135deg, #ffd700, #ffb347);
-          color: #000000;
-        }
-
-        .mobile-auth-btn:hover {
-          transform: translateY(-2px);
-        }
-
-        .mobile-nav-list {
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-        }
-
-        .mobile-nav-list-item {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          padding: 14px 16px;
-          background: none;
-          border: none;
-          border-radius: 8px;
-          color: #888;
-          font-size: 15px;
-          font-weight: 500;
-          cursor: pointer;
-          transition: all 0.2s;
-          text-align: left;
-        }
-
-        .mobile-nav-list-item.active {
-          background: rgba(229, 62, 62, 0.1);
-          color: #e53e3e;
-        }
-
-        .mobile-nav-list-item:hover {
-          background: rgba(255, 255, 255, 0.05);
-          color: #ffffff;
-        }
-
-        .mobile-premium-card {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          background: linear-gradient(
-            135deg,
-            rgba(255, 215, 0, 0.1),
-            rgba(255, 152, 0, 0.05)
-          );
-          border: 1px solid rgba(255, 215, 0, 0.3);
-          border-radius: 12px;
+        .main-content {
+          max-width: 1200px;
+          margin: 0 auto;
           padding: 16px;
         }
 
-        .mobile-premium-card svg {
-          color: #ffd700;
-          flex-shrink: 0;
+        .modal-backdrop {
+          position: fixed;
+          inset: 0;
+          background: rgba(0, 0, 0, 0.7);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 3000;
         }
 
-        .mobile-premium-card h4 {
-          margin: 0 0 4px 0;
-          color: #ffd700;
-          font-size: 14px;
-          font-weight: 600;
+        .modal {
+          background: #111827;
+          padding: 24px;
+          border-radius: 12px;
+          max-width: 400px;
+          width: 90%;
         }
 
-        .mobile-premium-card p {
-          margin: 0;
-          color: #cccccc;
-          font-size: 12px;
-        }
-
+        /* Desktop layout */
         @media (min-width: 769px) {
-          .mobile-header,
-          .mobile-bottom-nav {
-            display: none;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .mobile-menu {
-            width: 100%;
+          .app-root {
+            padding-top: 72px;
+            padding-bottom: 0;
           }
 
-          .mobile-nav-item {
-            font-size: 10px;
+          .desktop-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1500;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border-bottom: 1px solid rgba(229, 62, 62, 0.2);
           }
 
-          .mobile-header-content {
-            padding: 10px 12px;
+          .desktop-header-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+          }
+
+          .desktop-logo {
+            font-size: 20px;
+            font-weight: 700;
+          }
+
+          .desktop-nav {
+            display: flex;
+            gap: 8px;
+          }
+
+          .desktop-nav button {
+            background: none;
+            border: 1px solid transparent;
+            border-radius: 999px;
+            padding: 6px 12px;
+            color: #e5e7eb;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+          }
+
+          .desktop-nav button:hover {
+            border-color: #e53e3e;
+            color: #ffffff;
+          }
+
+          .desktop-auth {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+          }
+
+          .desktop-auth button {
+            background: #e53e3e;
+            border: none;
+            border-radius: 999px;
+            padding: 6px 12px;
+            color: #ffffff;
+            cursor: pointer;
+            font-size: 14px;
           }
         }
       `}</style>
-    </>
+    </div>
   );
 };
 
-export default MobileNavigation;
+export default HomeScreen;
